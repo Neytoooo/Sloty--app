@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  image         String?
+  stripeId      String?   @unique 
+  bio           String?   // Pour la page de vente du créateur
+  website       String?   
+  slots         AdSlot[]
+}
+
+model AdSlot {
+  id            String   @id @default(cuid())
+  date          DateTime
+  price         Float
+  displayType   String   // Ex: "Newsletter Top", "Podcast Mid-roll", "Sidebar"
+  description   String?  // Ex: "Bannière 600x200px en haut de la newsletter"
+  isBooked      Boolean  @default(false)
+  
+  creatorId     String
+  creator       User     @relation(fields: [creatorId], references: [id])
+  booking       Booking?
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  status        BookingStatus @default(PENDING)
+  
+  adImage       String   
+  adLink        String   
+  adText        String?  
+  
+  buyerEmail    String   
+  amountPaid    Float
+  
+  // Statistiques pour l'annonceur
+  clicks        Int      @default(0)
+  impressions   Int      @default(0)
+  
+  slotId        String   @unique
+  slot          AdSlot   @relation(fields: [slotId], references: [id])
+}
