@@ -9,14 +9,17 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  image         String?
-  stripeId      String?   @unique 
-  bio           String?   // Pour la page de vente du créateur
-  website       String?   
-  slots         AdSlot[]
+  id               String    @id @default(cuid())
+  clerkId          String    @unique
+  email            String    @unique
+  isAdmin          Boolean   @default(false)
+  businessVerified Boolean   @default(false)
+  businessName     String?
+  siret            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  adSlots          AdSlot[]
 }
 
 model AdSlot {

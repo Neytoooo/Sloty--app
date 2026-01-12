@@ -6,36 +6,42 @@ import { revalidatePath } from "next/cache";
 
 export async function createAdSlot(formData: FormData) {
   const { userId } = await auth();
-  const user = await currentUser(); // On récupère les infos complètes de l'utilisateur
-  
-  if (!userId || !user) throw new Error("Vous devez être connecté");
+  const user = await currentUser();
 
-  const dateValue = formData.get("date") as string;
-  const price = formData.get("price") as string;
-  const displayType = formData.get("type") as string;
+  if (!userId || !user) {
+    throw new Error("Vous devez être connecté.");
+  }
 
-  if (!dateValue || !price) return;
-
-  // L'email principal de ton compte Clerk
   const email = user.emailAddresses[0].emailAddress;
+  
+  // Récupération sécurisée des données
+  const price = parseFloat(formData.get("price") as string) || 0;
+  const date = new Date(formData.get("date") as string);
+  
+  // Correction ici : On s'assure que displayType n'est jamais null
+  const displayType = (formData.get("displayType") as string) || "Bannière Standard";
 
-  // 1. On crée/met à jour l'utilisateur avec son email
-  await prisma.user.upsert({
-    where: { id: userId },
-    update: { email: email }, // On met à jour l'email au cas où il change
-    create: { 
-      id: userId,
-      email: email 
+  // 1. Synchronisation de l'utilisateur
+  const dbUser = await prisma.user.upsert({
+    where: { clerkId: userId },
+    update: { email: email },
+    create: {
+      clerkId: userId,
+      email: email,
+      isAdmin: false,
+      businessVerified: false,
     },
   });
 
-  // 2. On crée le créneau
+  // 2. Création du créneau
   await prisma.adSlot.create({
     data: {
-      date: new Date(dateValue).toISOString(),
-      price: parseFloat(price),
-      displayType: displayType,
-      creatorId: userId,
+      price: price,
+      date: date,
+      displayType: displayType, // On envoie la valeur nettoyée
+      creator: {
+        connect: { id: dbUser.id }
+      }
     },
   });
 

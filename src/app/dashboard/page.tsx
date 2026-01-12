@@ -6,15 +6,23 @@ import { Plus, Tag, Euro, Calendar, Link as LinkIcon, Code } from "lucide-react"
 
 export default async function DashboardPage() {
   const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
 
-  if (!userId) {
-    redirect("/");
-  }
-
-  const slots = await prisma.adSlot.findMany({
-    where: { creatorId: userId },
-    orderBy: { date: 'asc' }
+  // On récupère l'utilisateur en base
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: userId }
   });
+
+  // LOGIQUE DE PROTECTION :
+  // Si l'utilisateur n'est PAS ADMIN (Ton pass-droit)
+  // ET qu'il n'est PAS vérifié -> Redirection forcée
+  if (dbUser && !dbUser.isAdmin && !dbUser.businessVerified) {
+    redirect("/dashboard/setup-business");
+  }
+  const slots = await prisma.adSlot.findMany({
+    where: { creatorId: dbUser?.id }, // On utilise l'ID interne de notre DB
+    orderBy: { date: 'asc' }
+    });
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const shareUrl = `${baseUrl}/book/${userId}`;
