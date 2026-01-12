@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  /* Supprime tout ce qu'il y a ici pour l'instant */
 };
 
 export default nextConfig;

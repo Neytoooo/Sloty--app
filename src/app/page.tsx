@@ -1,19 +1,37 @@
 import React from 'react';
 import { ArrowRight, Calendar, CheckCircle, Zap } from 'lucide-react';
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
       {/* --- Navigation --- */}
-      <nav className="flex items-center justify-between px-8 py-6 max-w-7-xl mx-auto">
+      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="text-2xl font-bold tracking-tight text-blue-600">Sponsio</div>
         <div className="hidden md:flex space-x-8 font-medium">
           <a href="#" className="hover:text-blue-600 transition">Comment ça marche ?</a>
           <a href="#" className="hover:text-blue-600 transition">Tarifs</a>
         </div>
-        <button className="bg-slate-900 text-white px-5 py-2 rounded-full hover:bg-slate-800 transition">
-          Connexion
-        </button>
+        
+        <div className="flex items-center gap-4">
+          {/* Affiche "Connexion" si l'utilisateur est déconnecté */}
+          <SignedOut>
+            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+              <button className="bg-slate-900 text-white px-5 py-2 rounded-full hover:bg-slate-800 transition text-sm font-medium">
+                Connexion
+              </button>
+            </SignInButton>
+          </SignedOut>
+
+          {/* Affiche le bouton profil et le lien Dashboard si connecté */}
+          <SignedIn>
+            <Link href="/dashboard" className="text-sm font-medium hover:text-blue-600 transition">
+              Mon Dashboard
+            </Link>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
       </nav>
 
       {/* --- Hero Section --- */}
@@ -26,10 +44,27 @@ export default function LandingPage() {
           La plateforme tout-en-un pour les créateurs de Newsletters et Podcasts. 
           Gérez vos réservations, vos paiements et vos créas sans envoyer un seul mail.
         </p>
+        
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          <button className="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex items-center justify-center">
-            Je suis un créateur <ArrowRight className="ml-2 h-5 w-5" />
-          </button>
+          {/* Section dynamique pour le bouton principal du Hero */}
+          <SignedOut>
+            <SignInButton 
+              mode="modal" 
+              forceRedirectUrl="/dashboard" 
+              signUpForceRedirectUrl="/dashboard"
+            >
+              <button className="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex items-center justify-center">
+                Commencer maintenant <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+            </SignInButton>
+          </SignedOut>
+          
+          <SignedIn>
+            <Link href="/dashboard" className="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex items-center justify-center">
+              Aller au Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </SignedIn>
+
           <button className="w-full md:w-auto bg-slate-100 text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-200 transition">
             Voir les démos
           </button>
