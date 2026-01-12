@@ -1,34 +1,32 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-// On utilise le nom correct suggéré par l'erreur : handleAssetsUpload
-import { handleAssetsUpload } from "./actions"; 
+import { handleAssetsUpload } from "./actions";
 
-export default async function SuccessPage({
-  searchParams,
-}: {
+// On définit l'interface pour les paramètres de l'URL (Next.js 15)
+interface SuccessPageProps {
   searchParams: Promise<{ slotId: string }>;
-}) {
-  // CORRECTIF 1 : On attend (await) les paramètres asynchrones de Next.js 15
+}
+
+export default async function SuccessPage({ searchParams }: SuccessPageProps) {
+  // CORRECTIF : On doit "unwrapper" searchParams avant de l'utiliser
   const { slotId } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-200">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-10 rounded-[2.5rem] shadow-2xl">
         <h1 className="text-2xl font-black text-white mb-6 text-center">
-          Dernière étape ! 🚀
+          Paiement réussi ! 🚀
         </h1>
         <p className="text-slate-400 text-sm text-center mb-8">
-          Ajoutez votre lien et votre visuel pour activer la publicité sur le site.
+          Complétez les informations ci-dessous pour activer votre publicité sur le site.
         </p>
 
         <form action={handleAssetsUpload} className="space-y-6">
-          {/* CORRECTIF 2 : On utilise la valeur extraite de l'await */}
+          {/* On passe l'ID du slot pour que l'action sache quoi mettre à jour */}
           <input type="hidden" name="slotId" value={slotId} />
 
           <div className="space-y-4 text-left">
             <div>
               <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Lien de redirection
+                Lien de redirection (Destination)
               </label>
               <input
                 name="link"
@@ -41,7 +39,7 @@ export default async function SuccessPage({
 
             <div>
               <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Image publicitaire
+                Image publicitaire (600x200px conseillé)
               </label>
               <input
                 name="image"
@@ -55,7 +53,7 @@ export default async function SuccessPage({
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20"
+            className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
           >
             Publier maintenant
           </button>
