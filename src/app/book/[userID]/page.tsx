@@ -1,129 +1,145 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { CalendarDays, Check, ArrowRight, Tag } from "lucide-react";
+import { Check, ArrowRight, Tag, Calendar as CalendarIcon, Sparkles } from "lucide-react";
 import { createCheckoutSession } from "./checkout";
 
 export default async function PublicBookingPage(props: { 
-  params: Promise<{ userId?: string; userID?: string; id?: string }> 
+  params: Promise<{ userID: string }> 
 }) {
-  
-  // On attend la résolution des paramètres
-  const resolvedParams = await props.params;
-  
-  // On récupère l'ID peu importe comment le dossier est nommé
-  const id = resolvedParams.userId || resolvedParams.userID || resolvedParams.id;
+  const { userID } = await props.params;
 
-  // LOG DE DEBUG : Regarde ton terminal VS Code après avoir rafraîchi la page
-  console.log("ID récupéré depuis l'URL :", id);
+  if (!userID) return notFound();
 
-  if (!id) {
-    console.error("ERREUR : Aucun ID trouvé dans params", resolvedParams);
-    return notFound();
-  }
-
-  // 1. On récupère les créneaux
+  // Récupère les créneaux
   const slots = await prisma.adSlot.findMany({
-    where: { creatorId: id },
-    orderBy: { date: 'asc' }
+    where: { creatorId: userID },
+    orderBy: { date: 'asc' },
+    include: { booking: true }
   });
 
-  // 2. On récupère le créateur
   const creator = await prisma.user.findUnique({
-    where: { id: id }
+    where: { id: userID }
   });
 
-  if (!creator) {
-    console.error("ERREUR : Utilisateur non trouvé dans la base pour l'ID :", id);
-    return notFound();
-  }
+  if (!creator) return notFound();
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
-      {/* --- Header / Hero --- */}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans pb-20">
+      {/* --- Hero Section --- */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-2 text-blue-600 font-bold text-sm uppercase tracking-widest mb-3">
-            <span className="w-8 h-[2px] bg-blue-600"></span>
-            Réservation
+        <div className="max-w-5xl mx-auto px-6 py-16 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+            <Sparkles size={16} />
+            Disponible pour sponsorings
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-4">
-            Réservez votre prochain <span className="text-blue-600">sponsoring</span>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
+            Propulsez votre marque avec <br />
+            <span className="text-blue-600">@{creator.email.split('@')[0]}</span>
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl">
-            Sélectionnez une date disponible ci-dessous pour promouvoir votre marque auprès de l'audience de <span className="font-semibold text-slate-900">{creator.email.split('@')[0]}</span>.
+          <p className="text-lg text-slate-500 max-w-2xl">
+            Sélectionnez un créneau disponible ci-dessous pour toucher une audience engagée et qualifiée.
           </p>
         </div>
       </div>
 
-      {/* --- Liste des créneaux --- */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="grid gap-6">
+      <main className="max-w-4xl mx-auto px-6 -mt-8">
+        {/* --- Statistiques Rapides / Filtre visuel --- */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Disponibles</p>
+             <p className="text-2xl font-black text-slate-900">{slots.filter(s => !s.isBooked).length} créneaux</p>
+          </div>
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hidden md:block">
+             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Audience</p>
+             <p className="text-2xl font-black text-slate-900">Vérifiée</p>
+          </div>
+          <div className="bg-blue-600 p-6 rounded-3xl shadow-lg shadow-blue-200">
+             <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Support</p>
+             <p className="text-2xl font-black text-white">Direct</p>
+          </div>
+        </div>
+
+        {/* --- Liste des Slots --- */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
+            <CalendarIcon size={22} className="text-blue-600" /> 
+            Prochains créneaux de diffusion
+          </h2>
+
           {slots.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
-              <CalendarDays className="mx-auto text-slate-300 mb-4" size={48} />
-              <p className="text-slate-500 font-medium">Aucun créneau disponible pour le moment.</p>
-              <p className="text-sm text-slate-400">Revenez plus tard ou contactez le créateur.</p>
+            <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center">
+              <p className="text-slate-400 font-medium italic">Aucun créneau n'est listé pour le moment.</p>
             </div>
           ) : (
             slots.map((slot) => (
               <div 
                 key={slot.id} 
-                className="group bg-white border border-slate-200 p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300"
+                className={`group relative overflow-hidden bg-white border ${
+                  slot.isBooked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-xl'
+                } p-6 md:p-8 rounded-[2rem] transition-all duration-300`}
               >
-                <form action={async () => {
-  "use server";
-  await createCheckoutSession(slot.id, slot.price, slot.displayType);
-}}>
-  <button type="submit" className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-600 transition-all shadow-lg">
-    Réserver <ArrowRight size={18} />
-  </button>
-</form>
-                <div className="flex items-center gap-6 mb-4 md:mb-0">
-                  {/* Badge Date */}
-                  <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-100 rounded-2xl w-20 h-20 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
-                      {new Date(slot.date).toLocaleDateString('fr-FR', { month: 'short' })}
-                    </span>
-                    <span className="text-2xl font-black text-slate-900">
-                      {new Date(slot.date).toLocaleDateString('fr-FR', { day: 'numeric' })}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold text-xl text-slate-900 capitalize">
-                      {new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                        <Tag size={14} />
-                        {slot.displayType}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  
+                  {/* Date & Info */}
+                  <div className="flex items-center gap-6">
+                    <div className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border ${
+                      slot.isBooked ? 'bg-slate-50 border-slate-100' : 'bg-blue-50 border-blue-100'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase text-blue-600">
+                        {new Date(slot.date).toLocaleDateString('fr-FR', { month: 'short' })}
                       </span>
-                      <span className="flex items-center gap-1 text-sm font-medium text-green-600">
-                        <Check size={16} /> Disponible
+                      <span className="text-3xl font-black text-slate-900">
+                        {new Date(slot.date).toLocaleDateString('fr-FR', { day: 'numeric' })}
                       </span>
                     </div>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-8 border-t md:border-t-0 pt-4 md:pt-0">
-                  <div className="text-left md:text-right">
-                    <p className="text-sm text-slate-400 font-medium">Tarif fixe</p>
-                    <p className="text-3xl font-black text-slate-900">{slot.price}€</p>
+                    <div>
+                      <h3 className="font-extrabold text-xl md:text-2xl text-slate-900 capitalize leading-tight">
+                        {new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-3 mt-2">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-tighter">
+                          <Tag size={12} />
+                          {slot.displayType}
+                        </span>
+                        {slot.isBooked ? (
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Indisponible</span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-xs font-bold text-green-600 uppercase tracking-tighter">
+                            <Check size={14} /> En ligne
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <button className="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-600 transform hover:scale-105 transition-all active:scale-95 shadow-lg shadow-slate-200">
-                    Réserver <ArrowRight size={18} />
-                  </button>
+
+                  {/* Prix & Action */}
+                  <div className="flex items-center justify-between md:flex-col md:items-end md:justify-center border-t md:border-t-0 pt-4 md:pt-0">
+                    <div className="md:text-right mb-2">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tarif fixe</p>
+                      <p className="text-4xl font-black text-slate-900 leading-none">{slot.price}€</p>
+                    </div>
+                    
+                    {!slot.isBooked && (
+                      <form action={async () => { "use server"; await createCheckoutSession(slot.id, slot.price, slot.displayType); }}>
+                        <button type="submit" className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-600 transform hover:scale-105 transition-all shadow-lg active:scale-95">
+                          Réserver <ArrowRight size={20} />
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
 
-        {/* --- Footer / Trust --- */}
-        <footer className="mt-16 text-center border-t border-slate-200 pt-8">
-          <p className="text-slate-400 text-sm flex items-center justify-center gap-2">
-            Paiement sécurisé par <span className="font-bold text-slate-600">Stripe</span>
-          </p>
-        </footer>
+        {/* --- Trust Badge --- */}
+        <div className="mt-16 text-center opacity-50">
+           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+             Paiement sécurisé par <span className="text-slate-900">Stripe</span>
+           </p>
+        </div>
       </main>
     </div>
   );

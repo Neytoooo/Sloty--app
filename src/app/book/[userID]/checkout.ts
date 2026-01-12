@@ -4,7 +4,8 @@ import Stripe from "stripe";
 import { redirect } from "next/navigation";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-01-27" as any, // Utilise la version la plus récente
+  // @ts-ignore
+  apiVersion: "2024-12-18.acacia", // Version stable garantie
 });
 
 export async function createCheckoutSession(slotId: string, price: number, displayType: string) {
@@ -25,8 +26,7 @@ export async function createCheckoutSession(slotId: string, price: number, displ
       },
     ],
     mode: "payment",
-    // Remplace par tes vraies URLs plus tard
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/success?slotId=${slotId}`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}`,
     metadata: {
       slotId: slotId, // Très important pour savoir quel slot a été payé

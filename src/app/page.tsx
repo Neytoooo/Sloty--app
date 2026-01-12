@@ -10,8 +10,8 @@ export default function LandingPage() {
       <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="text-2xl font-bold tracking-tight text-blue-600">Sponsio</div>
         <div className="hidden md:flex space-x-8 font-medium">
-          <a href="#" className="hover:text-blue-600 transition">Comment ça marche ?</a>
-          <a href="#" className="hover:text-blue-600 transition">Tarifs</a>
+          <Link href="/how-it-works" className="hover:text-blue-600 transition">How it works</Link>
+          <Link href="/pricing" className="hover:text-blue-600 transition">Pricing</Link>
         </div>
         
         <div className="flex items-center gap-4">
@@ -66,7 +66,7 @@ export default function LandingPage() {
           </SignedIn>
 
           <button className="w-full md:w-auto bg-slate-100 text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-200 transition">
-            Voir les démos
+            <Link href="/demos" className="hover:text-blue-600 transition">Démos</Link>
           </button>
         </div>
       </header>
