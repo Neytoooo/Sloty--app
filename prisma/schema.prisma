@@ -1,20 +1,33 @@
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
 
 generator client {
   provider = "prisma-client-js"
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  image         String?
-  stripeId      String?   @unique 
-  bio           String?   // Pour la page de vente du créateur
-  website       String?   
-  slots         AdSlot[]
+  id               String        @id @default(cuid())
+  clerkId          String        @unique
+  email            String        @unique
+  isAdmin          Boolean       @default(false)
+  businessVerified Boolean       @default(false)
+  adSlots          AdSlot[]
+  // Relation avec l'abonnement
+  subscription     Subscription? 
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId String   @unique
+  stripePriceId    String
+  status           String   // ex: "active", "canceled", "past_due"
+  currentPeriodEnd DateTime
+  updatedAt        DateTime @updatedAt
 }
 
 model AdSlot {
@@ -42,8 +55,8 @@ model Booking {
   createdAt     DateTime      @default(now())
   status        BookingStatus @default(PENDING)
   
-  adImage       String   
-  adLink        String   
+  adImage       String?   
+  adLink        String?   
   adText        String?  
   
   buyerEmail    String   
