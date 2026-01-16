@@ -10,10 +10,10 @@ export default function LandingPage() {
       <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div className="text-2xl font-bold tracking-tight text-blue-600">Sponsio</div>
         <div className="hidden md:flex space-x-8 font-medium">
-          <Link href="/how-it-works" className="hover:text-blue-600 transition">How it works</Link>
-          <Link href="/pricing" className="hover:text-blue-600 transition">Pricing</Link>
+          <Link href="/how-it-works" className="hover:text-blue-600 transition">Comment ça fonctionne ?</Link>
+          <Link href="/pricing" className="hover:text-blue-600 transition">Abonnement</Link>
         </div>
-        
+
         <div className="flex items-center gap-4">
           {/* Affiche "Connexion" si l'utilisateur est déconnecté */}
           <SignedOut>
@@ -27,7 +27,7 @@ export default function LandingPage() {
           {/* Affiche le bouton profil et le lien Dashboard si connecté */}
           <SignedIn>
             <Link href="/dashboard" className="text-sm font-medium hover:text-blue-600 transition">
-              Mon Dashboard
+              Dashboard
             </Link>
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
@@ -41,16 +41,16 @@ export default function LandingPage() {
           <span className="text-blue-600">en pilote automatique.</span>
         </h1>
         <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
-          La plateforme tout-en-un pour les créateurs de Newsletters et Podcasts. 
+          La plateforme tout-en-un pour les créateurs de Newsletters et Podcasts.
           Gérez vos réservations, vos paiements et vos créas sans envoyer un seul mail.
         </p>
-        
+
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
           {/* Section dynamique pour le bouton principal du Hero */}
           <SignedOut>
-            <SignInButton 
-              mode="modal" 
-              forceRedirectUrl="/dashboard" 
+            <SignInButton
+              mode="modal"
+              forceRedirectUrl="/dashboard"
               signUpForceRedirectUrl="/dashboard"
             >
               <button className="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex items-center justify-center">
@@ -58,7 +58,7 @@ export default function LandingPage() {
               </button>
             </SignInButton>
           </SignedOut>
-          
+
           <SignedIn>
             <Link href="/dashboard" className="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition flex items-center justify-center">
               Aller au Dashboard <ArrowRight className="ml-2 h-5 w-5" />

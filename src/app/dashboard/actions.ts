@@ -3,28 +3,24 @@
 import { prisma } from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import Stripe from "stripe";
+import { redirect } from "next/navigation";
 
-/**
- * ACTION : Créer un nouveau créneau publicitaire
- */
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
 export async function createAdSlot(formData: FormData) {
   const { userId } = await auth();
   const user = await currentUser();
 
-  if (!userId || !user) {
-    throw new Error("Vous devez être connecté.");
-  }
+  if (!userId || !user) throw new Error("Vous devez être connecté.");
 
   const email = user.emailAddresses[0].emailAddress;
-  
-  // Récupération sécurisée des données [cite: 96]
   const price = parseFloat(formData.get("price") as string) || 0;
   const date = new Date(formData.get("date") as string);
   
-  // S'assure que displayType n'est jamais null [cite: 97, 114]
-  const displayType = (formData.get("displayType") as string) || "Bannière Standard";
+  // ON GARDE TES OPTIONS EXACTES ICI
+  const displayType = (formData.get("displayType") as string) || "Haut de Newsletter";
 
-  // 1. Synchronisation de l'utilisateur en base [cite: 98]
   const dbUser = await prisma.user.upsert({
     where: { clerkId: userId },
     update: { email: email },
@@ -36,48 +32,48 @@ export async function createAdSlot(formData: FormData) {
     },
   });
 
-  // 2. Création du créneau lié à l'utilisateur [cite: 99]
   await prisma.adSlot.create({
     data: {
       price: price,
       date: date,
       displayType: displayType,
-      creator: {
-        connect: { id: dbUser.id }
-      }
+      creator: { connect: { id: dbUser.id } }
     },
   });
 
   revalidatePath("/dashboard");
 }
 
-/**
- * ACTION : Supprimer un créneau publicitaire
- */
 export async function deleteAdSlot(slotId: string) {
   const { userId: clerkId } = await auth();
-  
-  if (!clerkId) {
-    throw new Error("Vous devez être connecté pour supprimer un créneau.");
-  }
+  if (!clerkId) throw new Error("Non connecté");
 
-  // 1. On récupère le slot pour vérifier qu'il appartient bien à l'utilisateur [cite: 103, 117]
   const slot = await prisma.adSlot.findUnique({
     where: { id: slotId },
     include: { creator: true }
   });
 
-  // Sécurité : on empêche la suppression si l'utilisateur n'est pas le créateur [cite: 104]
-  if (!slot || slot.creator.clerkId !== clerkId) {
-    throw new Error("Vous n'avez pas l'autorisation de supprimer ce créneau.");
-  }
+  if (!slot || slot.creator.clerkId !== clerkId) throw new Error("Interdit");
 
-  // 2. Suppression du créneau
-  // Note : Grâce à la relation Prisma, le Booking associé sera traité selon ton schéma (Cascade) [cite: 23, 24]
-  await prisma.adSlot.delete({
-    where: { id: slotId }
+  await prisma.adSlot.delete({ where: { id: slotId } });
+  revalidatePath("/dashboard");
+}
+
+// CETTE ACTION SERA APPELÉE PAR TON BOUTON DANS PRICING
+export async function createSubscriptionSession() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Non connecté");
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [{ price: "price_XXXXXXXXXXXXXX", quantity: 1 }],
+    metadata: { userId: userId },
+    success_url: `${baseUrl}/dashboard?success=subscription`,
+    cancel_url: `${baseUrl}/pricing`,
   });
 
-  // 3. Mise à jour de l'interface
-  revalidatePath("/dashboard");
+  if (session.url) redirect(session.url);
 }

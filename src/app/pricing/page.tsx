@@ -1,8 +1,36 @@
 import React from 'react';
-import { Check, Zap, Percent } from 'lucide-react';
-import Link from 'next/link';
+import { Zap, Percent } from 'lucide-react';
+import { createSubscriptionSession } from './actions';
+import { currentUser } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { ConfettiSideCannons } from "@/components/confetti-side-cannons";
+import { PricingCard } from "@/components/pricing-card";
 
-export default function Pricing() {
+export default async function Pricing(props: {
+  searchParams: Promise<{ success?: string, canceled?: string }>
+}) {
+  const searchParams = await props.searchParams;
+  const showConfetti = searchParams.success === 'true';
+
+  const user = await currentUser();
+  let isPro = false;
+
+  if (user) {
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+      include: { subscription: true }
+    });
+
+    // On considère qu'il est pro si le statut est 'active'
+    console.log("DEBUG: Checking subscription for user", user.id);
+    console.log("DEBUG: DB User found:", dbUser ? "Yes" : "No");
+    console.log("DEBUG: Subscription status:", dbUser?.subscription?.status);
+
+    if (dbUser?.subscription?.status === 'active') {
+      isPro = true;
+    }
+  }
+
   const plans = [
     {
       name: "Liberté (Commission)",
@@ -16,7 +44,9 @@ export default function Pricing() {
       ],
       button: "Commencer gratuitement",
       highlight: false,
-      icon: <Percent className="text-blue-600" />
+      icon: <Percent className="text-blue-600" />,
+      link: "/dashboard",
+      isFree: true // Flag pour identifier le plan gratuit
     },
     {
       name: "Abonnement Pro",
@@ -28,14 +58,19 @@ export default function Pricing() {
         "Support prioritaire",
         "Personnalisation avancée du Widget"
       ],
-      button: "Passer au Plan Pro",
+      // Si pro, on change le texte et l'état
+      button: isPro ? "Plan Actif" : "Passer au Plan Pro",
       highlight: true,
-      icon: <Zap className="text-yellow-500" />
+      icon: <Zap className="text-yellow-500" />,
+      action: createSubscriptionSession,
+      isSubscribed: isPro
     }
   ];
 
   return (
     <div className="min-h-screen bg-white py-24 px-8">
+      {showConfetti && <ConfettiSideCannons />}
+
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-20">
           <h1 className="text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">Tarification flexible</h1>
@@ -43,48 +78,10 @@ export default function Pricing() {
             Choisissez le modèle qui vous convient : payez uniquement quand vous vendez, ou passez sur un abonnement fixe.
           </p>
         </div>
-        
+
         <div className="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto items-center">
           {plans.map((plan, i) => (
-            <div key={i} className={`relative p-10 rounded-[2.5rem] border-2 transition-all ${
-              plan.highlight 
-                ? 'bg-slate-900 text-white border-blue-600 shadow-2xl scale-105 z-10' 
-                : 'bg-white border-slate-200 text-slate-900 shadow-sm hover:border-slate-300'
-            }`}>
-              
-              <div className={`mb-6 w-12 h-12 rounded-2xl flex items-center justify-center ${
-                plan.highlight ? 'bg-slate-800' : 'bg-blue-50'
-              }`}>
-                {plan.icon}
-              </div>
-
-              <h3 className="text-2xl font-bold mb-2 tracking-tight">{plan.name}</h3>
-              <p className={`text-sm mb-8 font-medium ${plan.highlight ? 'text-slate-400' : 'text-slate-500'}`}>
-                {plan.description}
-              </p>
-              
-              <div className="flex items-baseline gap-1 mb-10">
-                <span className="text-5xl font-black tracking-tighter">{plan.price}€</span>
-                <span className={`font-bold ${plan.highlight ? 'text-slate-400' : 'text-slate-500'}`}>/mois</span>
-              </div>
-
-              <ul className="space-y-5 mb-12">
-                {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-center gap-3 text-sm font-semibold">
-                    <Check size={18} className="text-blue-500 flex-shrink-0" strokeWidth={3} /> 
-                    <span className={plan.highlight ? 'text-slate-200' : 'text-slate-700'}>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button className={`w-full py-4 rounded-2xl font-black text-lg transition-all transform active:scale-95 ${
-                plan.highlight 
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/40' 
-                  : 'bg-slate-900 hover:bg-slate-800 text-white shadow-md'
-              }`}>
-                {plan.button}
-              </button>
-            </div>
+            <PricingCard key={i} plan={plan} />
           ))}
         </div>
 

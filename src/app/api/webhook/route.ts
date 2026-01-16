@@ -1,62 +1,79 @@
 import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  // @ts-ignore
-  apiVersion: "2024-12-18.acacia",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = (await (headers())).get("Stripe-Signature") as string;
+  const signature = (await headers()).get("Stripe-Signature") as string;
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body, 
-      signature, 
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    console.log("DEBUG: Webhook received. Signature:", signature ? "Preset" : "Missing");
+    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
+    console.log("DEBUG: Webhook verified. Type:", event.type);
   } catch (err: any) {
-    console.error(`❌ Erreur Webhook: ${err.message}`);
+    console.error(`DEBUG: Webhook Error: ${err.message}`);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  // Si le paiement est validé
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    
-    // On récupère le slotId qu'on a passé dans les metadata lors du checkout
-    const slotId = session.metadata?.slotId;
-    const buyerEmail = session.customer_details?.email || "inconnu@test.com";
 
-    if (slotId) {
-      try {
-        // On effectue les deux opérations en une fois (Transaction)
-        await prisma.$transaction([
-          // 1. On marque le slot comme vendu pour qu'il disparaisse de la liste publique
-          prisma.adSlot.update({
-            where: { id: slotId },
-            data: { isBooked: true },
-          }),
-          // 2. On crée l'entrée de réservation avec des placeholders pour l'image
-          prisma.booking.create({
-            data: {
-              slotId: slotId,
-              buyerEmail: buyerEmail,
-              amountPaid: session.amount_total ? session.amount_total / 100 : 0,
-              adImage: "https://via.placeholder.com/600x200?text=En+attente+du+visuel",
-              adLink: "#",
-            },
-          }),
-        ]);
-        
-        console.log(`✅ Succès : Slot ${slotId} réservé et Booking créé.`);
-      } catch (dbError) {
-        console.error("❌ Erreur Base de données lors du webhook:", dbError);
-        return new NextResponse("Database Error", { status: 500 });
+    // GESTION ABONNEMENT
+    if (session.mode === "subscription") {
+      const userId = session.metadata?.userId;
+      const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription as string);
+
+      if (userId) {
+        await prisma.subscription.upsert({
+          where: { userId: userId },
+          create: {
+            userId: userId,
+            stripeCustomerId: session.customer as string,
+            stripePriceId: (stripeSubscription as any).items.data[0].price.id,
+            status: "active",
+            currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+          },
+          update: {
+            status: "active",
+            currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+          }
+        });
+      }
+    }
+
+    // GESTION RÉSERVATION (Payment classique)
+    if (session.mode === "payment") {
+      const slotId = session.metadata?.slotId;
+      const amountPaid = session.amount_total ? session.amount_total / 100 : 0;
+      const buyerEmail = session.customer_details?.email || "inconnu@email.com";
+
+      if (slotId) {
+        await prisma.adSlot.update({
+          where: { id: slotId },
+          data: {
+            isBooked: true,
+            booking: {
+              upsert: {
+                create: {
+                  amountPaid: amountPaid,
+                  buyerEmail: buyerEmail,
+                  status: "PENDING",
+                  // adImage et adLink sont maintenant optionnels, on les attend via la page success
+                },
+                update: {
+                  amountPaid: amountPaid,
+                  buyerEmail: buyerEmail,
+                  // On ne touche pas au reste si ça existe déjà
+                }
+              }
+            }
+          }
+        });
+        console.log(`[STRIPE WEBHOOK] Booking created for slot ${slotId} with amount ${amountPaid}€`);
       }
     }
   }

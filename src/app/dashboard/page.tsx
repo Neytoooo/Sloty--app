@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createAdSlot, deleteAdSlot } from "./actions";
-import { Plus, Tag, Euro, Calendar, Link as LinkIcon, Code, MousePointer2, ExternalLink, X, Trash2 } from "lucide-react";
+import { Plus, Tag, Euro, Calendar, Link as LinkIcon, Code, MousePointer2, ExternalLink, X, Trash2, Home } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -37,12 +37,12 @@ export default async function DashboardPage({
 
   const selectedSlot = slots.find(s => s.id === selectedSlotId);
 
-  const displayRevenue = selectedSlot 
-    ? (selectedSlot.booking?.amountPaid || 0) 
+  const displayRevenue = selectedSlot
+    ? (selectedSlot.booking?.amountPaid || 0)
     : slots.reduce((acc, s) => acc + (s.booking?.amountPaid || 0), 0);
 
-  const displayClicks = selectedSlot 
-    ? (selectedSlot.booking?.clicks || 0) 
+  const displayClicks = selectedSlot
+    ? (selectedSlot.booking?.clicks || 0)
     : slots.reduce((acc, s) => acc + (s.booking?.clicks || 0), 0);
 
   return (
@@ -52,15 +52,24 @@ export default async function DashboardPage({
           <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
             Sponsio Dashboard
           </h1>
-          <div className="flex items-center gap-4 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700">
-             <LinkIcon size={14} className="text-blue-400" />
-             <span className="truncate max-w-[200px]">{shareUrl}</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700/50 hover:text-white transition-all text-slate-400"
+            >
+              <Home size={14} />
+              <span>Retour</span>
+            </Link>
+            <div className="flex items-center gap-4 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700">
+              <LinkIcon size={14} className="text-blue-400" />
+              <span className="truncate max-w-[200px]">{shareUrl}</span>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
-        
+
         {/* --- STATS --- */}
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-500">
@@ -102,7 +111,7 @@ export default async function DashboardPage({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          
+
           {/* --- FORMULAIRE --- */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800/40 border border-slate-700 p-8 rounded-[2rem]">
@@ -128,11 +137,10 @@ export default async function DashboardPage({
           {/* --- LISTE --- */}
           <div className="lg:col-span-2 space-y-6">
             {slots.map((slot) => (
-              <div 
-                key={slot.id} 
-                className={`group border-2 p-6 rounded-[2rem] transition-all ${
-                  selectedSlotId === slot.id ? 'bg-blue-600/10 border-blue-500' : 'bg-slate-800/30 border-slate-700 hover:border-slate-500'
-                }`}
+              <div
+                key={slot.id}
+                className={`group border-2 p-6 rounded-[2rem] transition-all ${selectedSlotId === slot.id ? 'bg-blue-600/10 border-blue-500' : 'bg-slate-800/30 border-slate-700 hover:border-slate-500'
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <Link href={`/dashboard?slotId=${slot.id}`} scroll={false} className="flex items-center gap-5 flex-1">
@@ -155,7 +163,7 @@ export default async function DashboardPage({
                         <Trash2 size={20} />
                       </button>
                     </form>
-                    
+
                     <div className="text-right">
                       <p className="text-2xl font-black text-white">{slot.price}€</p>
                       {slot.isBooked && <span className="text-[10px] font-black text-green-500 uppercase">Vendu</span>}

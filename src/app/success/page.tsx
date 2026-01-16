@@ -2,12 +2,12 @@ import { handleAssetsUpload } from "./actions";
 
 // On définit l'interface pour les paramètres de l'URL (Next.js 15)
 interface SuccessPageProps {
-  searchParams: Promise<{ slotId: string }>;
+  searchParams: Promise<{ slotId: string; error?: string }>;
 }
 
 export default async function SuccessPage({ searchParams }: SuccessPageProps) {
   // CORRECTIF : On doit "unwrapper" searchParams avant de l'utiliser
-  const { slotId } = await searchParams;
+  const { slotId, error } = await searchParams;
 
   return (
     <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-200">
@@ -15,6 +15,12 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
         <h1 className="text-2xl font-black text-white mb-6 text-center">
           Paiement réussi ! 🚀
         </h1>
+
+        {error === 'moderation_failed' && (
+          <div className="mb-6 p-4 bg-red-900/50 border border-red-500 rounded-xl text-red-200 text-sm font-semibold">
+            ⚠️ Votre image a été refusée par la modération (contenu inapproprié). Veuillez en choisir une autre.
+          </div>
+        )}
         <p className="text-slate-400 text-sm text-center mb-8">
           Complétez les informations ci-dessous pour activer votre publicité sur le site.
         </p>

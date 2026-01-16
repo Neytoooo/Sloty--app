@@ -55,8 +55,8 @@ model Booking {
   createdAt     DateTime      @default(now())
   status        BookingStatus @default(PENDING)
   
-  adImage       String   
-  adLink        String   
+  adImage       String?   
+  adLink        String?   
   adText        String?  
   
   buyerEmail    String   
