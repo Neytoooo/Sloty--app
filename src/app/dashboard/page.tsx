@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { createAdSlot, deleteAdSlot } from "./actions";
-import { Plus, Tag, Euro, Calendar, Link as LinkIcon, Code, MousePointer2, ExternalLink, X, Trash2, Home } from "lucide-react";
+import { createAdSlot } from "./actions";
+import { Plus, Euro, MousePointer2, ExternalLink, X, Trash2, Home, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
+import CategoryBoard from "@/components/dashboard/category-board";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function DashboardPage({
     include: {
       adSlots: {
         include: { booking: true },
-        orderBy: { date: 'asc' }
+        orderBy: { order: 'asc' }
       }
     }
   });
@@ -30,6 +31,12 @@ export default async function DashboardPage({
   if (dbUser && !dbUser.isAdmin && !dbUser.businessVerified) {
     redirect("/dashboard/setup-business");
   }
+
+  // Fetch Categories for DnD
+  const categories = await prisma.category.findMany({
+    where: { user: { clerkId: userId } },
+    orderBy: { createdAt: 'asc' }
+  });
 
   const slots = dbUser?.adSlots || [];
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -122,6 +129,13 @@ export default async function DashboardPage({
                   <input type="number" name="price" placeholder="Prix (€)" required className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pl-10 text-white" />
                   <Euro size={16} className="absolute left-3 top-4 text-slate-500" />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" name="title" placeholder="Titre (ex: Youtube)" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white" />
+                  <input type="date" name="endDate" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white" />
+                </div>
+                <input type="url" name="contentLink" placeholder="Lien du contenu (ex: https://youtube.com/...)" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white" />
+
                 <select name="displayType" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white">
                   <option value="Haut de Newsletter">Haut de Newsletter</option>
                   <option value="Milieu de Newsletter">Milieu de Newsletter</option>
@@ -134,57 +148,16 @@ export default async function DashboardPage({
             </div>
           </div>
 
-          {/* --- LISTE --- */}
+          {/* --- LIST & DRAG AND DROP --- */}
           <div className="lg:col-span-2 space-y-6">
-            {slots.map((slot) => (
-              <div
-                key={slot.id}
-                className={`group border-2 p-6 rounded-[2rem] transition-all ${selectedSlotId === slot.id ? 'bg-blue-600/10 border-blue-500' : 'bg-slate-800/30 border-slate-700 hover:border-slate-500'
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <Link href={`/dashboard?slotId=${slot.id}`} scroll={false} className="flex items-center gap-5 flex-1">
-                    <div className={`p-3 rounded-2xl ${slot.isBooked ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
-                      <Calendar size={24} />
-                    </div>
-                    <div>
-                      <p className="font-black text-lg text-white">{new Date(slot.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
-                      <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{slot.displayType}</p>
-                    </div>
-                  </Link>
+            <div className="mb-0">
+              <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
+                <span className="bg-blue-600 w-2 h-8 rounded-full"></span>
+                Mes Espaces Publicitaires
+              </h2>
 
-                  <div className="flex items-center gap-4">
-                    {/* BOUTON SUPPRIMER */}
-                    <form action={async () => {
-                      "use server";
-                      await deleteAdSlot(slot.id);
-                    }}>
-                      <button className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all">
-                        <Trash2 size={20} />
-                      </button>
-                    </form>
-
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-white">{slot.price}€</p>
-                      {slot.isBooked && <span className="text-[10px] font-black text-green-500 uppercase">Vendu</span>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Widget Code (Uniquement si sélectionné) */}
-                {selectedSlotId === slot.id && (
-                  <div className="mt-6 pt-6 border-t border-slate-700/50">
-                    <div className="flex items-center gap-2 mb-2 text-slate-500">
-                      <Code size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-wider">Code Widget</span>
-                    </div>
-                    <code className="text-[10px] text-slate-400 bg-black/20 p-3 block rounded-xl border border-white/5 truncate">
-                      {`<iframe src="${baseUrl}/widget/${slot.id}" width="600" height="200" frameborder="0"></iframe>`}
-                    </code>
-                  </div>
-                )}
-              </div>
-            ))}
+              <CategoryBoard initialSlots={slots} initialCategories={categories} />
+            </div>
           </div>
         </div>
       </main>
