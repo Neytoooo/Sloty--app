@@ -16,7 +16,21 @@ model User {
   businessVerified Boolean       @default(false)
   adSlots          AdSlot[]
   // Relation avec l'abonnement
+
+  categories       Category[] // Relation pour les catégories
+  // Relation avec l'abonnement
   subscription     Subscription? 
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  adSlots   AdSlot[]
+  createdAt DateTime @default(now())
+
+  @@unique([userId, name])
 }
 
 model Subscription {
@@ -35,11 +49,20 @@ model AdSlot {
   date          DateTime
   price         Float
   displayType   String   // Ex: "Newsletter Top", "Podcast Mid-roll", "Sidebar"
+  title         String?  // Ex: "Youtube", "Instagram"
+  contentLink   String?  // Ex: "https://youtube.com/..."
   description   String?  // Ex: "Bannière 600x200px en haut de la newsletter"
+  endDate       DateTime? // Fin du créneau (si plage de dates)
   isBooked      Boolean  @default(false)
+  
   
   creatorId     String
   creator       User     @relation(fields: [creatorId], references: [id])
+  
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  order         Int       @default(0)
+
   booking       Booking?
 }
 

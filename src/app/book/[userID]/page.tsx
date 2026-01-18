@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { Check, ArrowRight, Tag, Calendar as CalendarIcon, Sparkles } from "lucide-react";
 import { createCheckoutSession } from "./checkout";
 
-export default async function PublicBookingPage(props: { 
-  params: Promise<{ userID: string }> 
+export default async function PublicBookingPage(props: {
+  params: Promise<{ userID: string }>
 }) {
   const { userID } = await props.params;
 
@@ -46,23 +46,23 @@ export default async function PublicBookingPage(props: {
         {/* --- Statistiques Rapides / Filtre visuel --- */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Disponibles</p>
-             <p className="text-2xl font-black text-slate-900">{slots.filter(s => !s.isBooked).length} créneaux</p>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Disponibles</p>
+            <p className="text-2xl font-black text-slate-900">{slots.filter(s => !s.isBooked).length} créneaux</p>
           </div>
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hidden md:block">
-             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Audience</p>
-             <p className="text-2xl font-black text-slate-900">Vérifiée</p>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Audience</p>
+            <p className="text-2xl font-black text-slate-900">Vérifiée</p>
           </div>
           <div className="bg-blue-600 p-6 rounded-3xl shadow-lg shadow-blue-200">
-             <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Support</p>
-             <p className="text-2xl font-black text-white">Direct</p>
+            <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Support</p>
+            <p className="text-2xl font-black text-white">Direct</p>
           </div>
         </div>
 
         {/* --- Liste des Slots --- */}
         <div className="space-y-6">
           <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-            <CalendarIcon size={22} className="text-blue-600" /> 
+            <CalendarIcon size={22} className="text-blue-600" />
             Prochains créneaux de diffusion
           </h2>
 
@@ -72,19 +72,17 @@ export default async function PublicBookingPage(props: {
             </div>
           ) : (
             slots.map((slot) => (
-              <div 
-                key={slot.id} 
-                className={`group relative overflow-hidden bg-white border ${
-                  slot.isBooked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-xl'
-                } p-6 md:p-8 rounded-[2rem] transition-all duration-300`}
+              <div
+                key={slot.id}
+                className={`group relative overflow-hidden bg-white border ${slot.isBooked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-xl'
+                  } p-6 md:p-8 rounded-[2rem] transition-all duration-300`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  
+
                   {/* Date & Info */}
                   <div className="flex items-center gap-6">
-                    <div className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border ${
-                      slot.isBooked ? 'bg-slate-50 border-slate-100' : 'bg-blue-50 border-blue-100'
-                    }`}>
+                    <div className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border ${slot.isBooked ? 'bg-slate-50 border-slate-100' : 'bg-blue-50 border-blue-100'
+                      }`}>
                       <span className="text-[10px] font-black uppercase text-blue-600">
                         {new Date(slot.date).toLocaleDateString('fr-FR', { month: 'short' })}
                       </span>
@@ -95,9 +93,18 @@ export default async function PublicBookingPage(props: {
 
                     <div>
                       <h3 className="font-extrabold text-xl md:text-2xl text-slate-900 capitalize leading-tight">
-                        {new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        {slot.title || slot.displayType}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-3 mt-2">
+                      <p className="text-sm font-medium text-slate-500 mb-2">
+                        {new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        {slot.endDate && ` - ${new Date(slot.endDate).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}`}
+                      </p>
+                      {slot.contentLink && (
+                        <a href={slot.contentLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-500 hover:text-blue-600 underline mb-2 block">
+                          Voir le support
+                        </a>
+                      )}
+                      <div className="flex flex-wrap items-center gap-3">
                         <span className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-tighter">
                           <Tag size={12} />
                           {slot.displayType}
@@ -119,7 +126,7 @@ export default async function PublicBookingPage(props: {
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tarif fixe</p>
                       <p className="text-4xl font-black text-slate-900 leading-none">{slot.price}€</p>
                     </div>
-                    
+
                     {!slot.isBooked && (
                       <form action={async () => { "use server"; await createCheckoutSession(slot.id, slot.price, slot.displayType); }}>
                         <button type="submit" className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-600 transform hover:scale-105 transition-all shadow-lg active:scale-95">
@@ -136,9 +143,9 @@ export default async function PublicBookingPage(props: {
 
         {/* --- Trust Badge --- */}
         <div className="mt-16 text-center opacity-50">
-           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-             Paiement sécurisé par <span className="text-slate-900">Stripe</span>
-           </p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+            Paiement sécurisé par <span className="text-slate-900">Stripe</span>
+          </p>
         </div>
       </main>
     </div>

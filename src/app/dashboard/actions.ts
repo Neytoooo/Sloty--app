@@ -17,7 +17,11 @@ export async function createAdSlot(formData: FormData) {
   const email = user.emailAddresses[0].emailAddress;
   const price = parseFloat(formData.get("price") as string) || 0;
   const date = new Date(formData.get("date") as string);
-  
+  const endDateRaw = formData.get("endDate") as string;
+  const endDate = endDateRaw ? new Date(endDateRaw) : null;
+  const title = formData.get("title") as string;
+  const contentLink = formData.get("contentLink") as string;
+
   // ON GARDE TES OPTIONS EXACTES ICI
   const displayType = (formData.get("displayType") as string) || "Haut de Newsletter";
 
@@ -36,7 +40,10 @@ export async function createAdSlot(formData: FormData) {
     data: {
       price: price,
       date: date,
+      endDate: endDate,
       displayType: displayType,
+      title: title,
+      contentLink: contentLink,
       creator: { connect: { id: dbUser.id } }
     },
   });
