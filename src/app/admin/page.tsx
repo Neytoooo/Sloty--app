@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import styles from "./admin.module.css";
 import {
   Users,
   BarChart3,
@@ -65,22 +66,22 @@ export default async function AdminDashboard() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200">
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
+    <div className={styles.pageContainer}>
+      <div className={styles.contentWrapper}>
+        <div className={styles.gridLayout}>
           {/* Sidebar */}
-          <aside className="h-fit rounded-2xl border border-slate-800 bg-slate-950/40 p-4 lg:sticky lg:top-6">
-            <div className="flex items-center justify-between">
+          <aside className={styles.sidebar}>
+            <div className={styles.sidebarHeader}>
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Sponsio</p>
-                <p className="text-lg font-black text-white">HQ Admin</p>
+                <p className={styles.brandName}>Sponsio</p>
+                <p className={styles.brandTitle}>HQ Admin</p>
               </div>
-              <span className="rounded-full border border-slate-800 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase text-slate-300">
+              <span className={styles.adminTag}>
                 Admin
               </span>
             </div>
 
-            <nav className="mt-6 space-y-1">
+            <nav className={styles.nav}>
               {[
                 { label: "Overview", icon: <LayoutDashboard className="h-4 w-4" />, active: true },
                 { label: "Transactions", icon: <CreditCard className="h-4 w-4" /> },
@@ -91,20 +92,18 @@ export default async function AdminDashboard() {
                   key={item.label}
                   href="#"
                   className={cx(
-                    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition",
-                    item.active
-                      ? "bg-slate-900 text-white border border-slate-800"
-                      : "text-slate-300 hover:bg-slate-900/60 hover:text-white"
+                    styles.navItem,
+                    item.active ? styles.navItemActive : styles.navItemInactive
                   )}
                 >
-                  <span className={cx("text-slate-400", item.active && "text-white")}>{item.icon}</span>
+                  <span className={cx(styles.navIcon, item.active && styles.navIconActive)}>{item.icon}</span>
                   {item.label}
                 </a>
               ))}
             </nav>
 
-            <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Insight</p>
+            <div className={styles.insightBox}>
+              <p className={styles.brandName}>Insight</p>
               <p className="mt-2 text-sm text-slate-300">
                 Objectif : pousser le CTR et remplir les slots premium. Ajoute une alerte quand{" "}
                 <span className="font-bold text-white">CTR &lt; 1.2%</span>.
@@ -113,31 +112,31 @@ export default async function AdminDashboard() {
           </aside>
 
           {/* Main */}
-          <main className="space-y-6">
+          <main className={styles.mainContent}>
             {/* Topbar */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className={styles.topbar}>
+              <div className={styles.topbarFlex}>
                 <div>
-                  <h1 className="text-2xl font-black text-white md:text-3xl">Dashboard Admin</h1>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <h1 className={styles.pageTitle}>Dashboard Admin</h1>
+                  <p className={styles.pageSubtitle}>
                     Centre de commande Sponsio — suivi KPI, ventes et activité.
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <div className={styles.actionsContainer}>
+                  <div className={styles.searchWrapper}>
+                    <Search className={styles.searchIcon} />
                     <input
                       placeholder="Rechercher (buyer, montant, statut...)"
-                      className="w-full rounded-xl border border-slate-800 bg-slate-950/40 pl-10 pr-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 outline-none focus:border-slate-700"
+                      className={styles.searchInput}
                     />
                   </div>
 
-                  <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm font-bold text-white hover:bg-slate-900">
+                  <button className={styles.actionButton}>
                     30 jours <ChevronDown className="h-4 w-4 text-slate-300" />
                   </button>
 
-                  <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm font-bold text-white hover:bg-slate-900">
+                  <button className={styles.actionButton}>
                     <Download className="h-4 w-4" />
                     Export
                   </button>
@@ -146,24 +145,24 @@ export default async function AdminDashboard() {
             </div>
 
             {/* KPI */}
-            <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <section className={styles.statsGrid}>
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm"
+                  className={styles.statCard}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className={styles.statHeader}>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                      <p className={styles.statLabel}>
                         {stat.label}
                       </p>
-                      <p className="mt-2 text-3xl font-black text-white">{stat.value}</p>
+                      <p className={styles.statValue}>{stat.value}</p>
                     </div>
 
-                    <div className={cx("rounded-2xl border p-3", stat.pill)}>{stat.icon}</div>
+                    <div className={cx(styles.statPillBase, stat.pill)}>{stat.icon}</div>
                   </div>
 
-                  <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                  <div className={styles.statMeta}>
                     <span className="h-2 w-2 rounded-full bg-slate-600" />
                     Dernière mise à jour: live
                   </div>
@@ -172,36 +171,36 @@ export default async function AdminDashboard() {
             </section>
 
             {/* Charts row (UI placeholders) */}
-            <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-                <div className="flex items-center justify-between">
+            <section className={styles.sectionsGrid}>
+              <div className={styles.chartCard}>
+                <div className={styles.sectionHeader}>
                   <div>
-                    <h3 className="text-base font-black text-white">Revenus (UI)</h3>
-                    <p className="mt-1 text-sm text-slate-400">Courbe des paiements encaissés sur la période.</p>
+                    <h3 className={styles.sectionTitle}>Revenus (UI)</h3>
+                    <p className={styles.pageSubtitle}>Courbe des paiements encaissés sur la période.</p>
                   </div>
-                  <span className="rounded-full border border-slate-800 bg-slate-950/40 px-2 py-1 text-[10px] font-bold uppercase text-slate-300">
+                  <span className={styles.comingSoonTag}>
                     Coming soon
                   </span>
                 </div>
 
-                <div className="mt-6 h-40 rounded-2xl border border-dashed border-slate-800 bg-slate-950/20 flex items-center justify-center text-sm text-slate-500">
+                <div className={styles.chartPlaceholder}>
                   Zone chart (Recharts / Tremor / etc.)
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-                <h3 className="text-base font-black text-white">Insights</h3>
-                <p className="mt-1 text-sm text-slate-400">Lecture rapide des signaux business.</p>
+              <div className={styles.insightsCard}>
+                <h3 className={styles.sectionTitle}>Insights</h3>
+                <p className={styles.pageSubtitle}>Lecture rapide des signaux business.</p>
 
                 <div className="mt-5 space-y-3">
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-500">CTR réseau</p>
+                  <div className={styles.insightItem}>
+                    <p className={styles.brandName}>CTR réseau</p>
                     <p className="mt-1 text-sm text-slate-200">
                       Surveille les placements qui génèrent beaucoup de clics mais peu de ventes.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Slots premium</p>
+                  <div className={styles.insightItem}>
+                    <p className={styles.brandName}>Slots premium</p>
                     <p className="mt-1 text-sm text-slate-200">
                       Ajoute une alerte quand <span className="font-bold text-white">stock &lt; 5</span>.
                     </p>
@@ -211,17 +210,17 @@ export default async function AdminDashboard() {
             </section>
 
             {/* Table */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+            <section className={styles.tableContainer}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-black text-white">Dernières Transactions</h3>
-                  <p className="mt-1 text-sm text-slate-400">Flux des paiements les plus récents.</p>
+                  <h3 className={styles.sectionTitle}>Dernières Transactions</h3>
+                  <p className={styles.pageSubtitle}>Flux des paiements les plus récents.</p>
                 </div>
               </div>
 
-              <div className="mt-6 overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b border-slate-800 text-xs uppercase font-bold text-slate-500">
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead className={styles.tableHead}>
                     <tr>
                       <th className="pb-4">Acheteur</th>
                       <th className="pb-4">Montant</th>
@@ -232,15 +231,15 @@ export default async function AdminDashboard() {
 
                   <tbody className="divide-y divide-slate-800">
                     {lastTransactions.map((t, idx) => (
-                      <tr key={idx} className="hover:bg-slate-800/30 transition-colors">
+                      <tr key={idx} className={styles.tableRow}>
                         <td className="py-4 text-slate-300">{t.buyer}</td>
                         <td className="py-4 font-black text-white">{t.amount}</td>
                         <td className="py-4">
                           <span
                             className={cx(
-                              "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold uppercase border",
-                              t.status === "validé" && "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
-                              t.status === "en attente" && "bg-amber-500/10 text-amber-300 border-amber-500/20"
+                              styles.statusPill,
+                              t.status === "validé" && styles.statusValidated,
+                              t.status === "en attente" && styles.statusPending
                             )}
                           >
                             {t.status}

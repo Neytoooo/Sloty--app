@@ -1,0 +1,164 @@
+@reference "../tailwind-utils.css";
+
+/* Dashboard Styles */
+.pageContainer {
+    @apply min-h-screen bg-[#0f172a] text-slate-200 font-sans pb-20;
+}
+
+/* Header */
+.header {
+    @apply border-b border-slate-800 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-10;
+}
+
+.headerContent {
+    @apply max-w-7xl mx-auto px-6 py-4 flex justify-between items-center;
+}
+
+.headerTitle {
+    @apply text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent;
+}
+
+.headerActions {
+    @apply flex items-center gap-4;
+}
+
+.backButton {
+    @apply flex items-center gap-2 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700/50 hover:text-white transition-all text-slate-400;
+}
+
+.shareContainer {
+    @apply flex items-center gap-4 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700;
+}
+
+.shareIcon {
+    @apply text-blue-400;
+}
+
+.shareText {
+    @apply truncate max-w-[200px];
+}
+
+/* Main */
+.main {
+    @apply max-w-7xl mx-auto px-6 py-10;
+}
+
+/* Stats */
+.statsHeader {
+    @apply mb-8 flex items-center justify-between;
+}
+
+.statsTitle {
+    @apply text-sm font-black uppercase tracking-[0.3em] text-slate-500;
+}
+
+.viewAllLink {
+    @apply text-xs flex items-center gap-1 text-blue-400 hover:text-white transition;
+}
+
+.statsGrid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6 mb-12;
+}
+
+.statCardBase {
+    @apply bg-slate-800/40 border p-8 rounded-[2.5rem] transition-all;
+}
+
+.borderGreen {
+    @apply border-green-500/50;
+}
+
+.borderBlue {
+    @apply border-blue-500/50;
+}
+
+.borderDefault {
+    @apply border-slate-700;
+}
+
+.statIconWrapperGreen {
+    @apply flex items-center gap-3 text-green-400 mb-4;
+}
+
+.statIconWrapperBlue {
+    @apply flex items-center gap-3 text-blue-400 mb-4;
+}
+
+.statIconWrapperDefault {
+    @apply flex items-center gap-3 text-slate-500 mb-4;
+}
+
+.statLabel {
+    @apply text-[10px] font-black uppercase tracking-widest;
+}
+
+.statValue {
+    @apply text-4xl font-black text-white;
+}
+
+.publicPageLink {
+    @apply text-xs font-bold text-blue-400 truncate block;
+}
+
+/* Layout Grid */
+.contentGrid {
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-10;
+}
+
+.formColumn {
+    @apply lg:col-span-1;
+}
+
+.listColumn {
+    @apply lg:col-span-2 space-y-6;
+}
+
+/* Form */
+.formCard {
+    @apply bg-slate-800/40 border border-slate-700 p-8 rounded-[2rem];
+}
+
+.formTitle {
+    @apply text-lg font-bold mb-6 text-white;
+}
+
+.formStack {
+    @apply space-y-5;
+}
+
+.input {
+    @apply w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white;
+}
+
+.inputWithIconWrapper {
+    @apply relative;
+}
+
+.inputWithIcon {
+    @apply w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pl-10 text-white;
+}
+
+.inputIcon {
+    @apply absolute left-3 top-4 text-slate-500;
+}
+
+.dateGrid {
+    @apply grid grid-cols-2 gap-4;
+}
+
+.submitButton {
+    @apply w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg;
+}
+
+/* Slots List Header */
+.slotsHeader {
+    @apply mb-0;
+}
+
+.slotsTitle {
+    @apply text-2xl font-black text-white mb-6 flex items-center gap-3;
+}
+
+.titleIndicator {
+    @apply bg-blue-600 w-2 h-8 rounded-full;
+}

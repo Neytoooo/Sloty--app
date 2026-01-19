@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { syncSubscription } from "@/lib/subscription";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
@@ -24,25 +25,7 @@ export async function POST(req: Request) {
 
     // GESTION ABONNEMENT
     if (session.mode === "subscription") {
-      const userId = session.metadata?.userId;
-      const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription as string);
-
-      if (userId) {
-        await prisma.subscription.upsert({
-          where: { userId: userId },
-          create: {
-            userId: userId,
-            stripeCustomerId: session.customer as string,
-            stripePriceId: (stripeSubscription as any).items.data[0].price.id,
-            status: "active",
-            currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
-          },
-          update: {
-            status: "active",
-            currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
-          }
-        });
-      }
+      await syncSubscription(session.id);
     }
 
     // GESTION RÉSERVATION (Payment classique)
