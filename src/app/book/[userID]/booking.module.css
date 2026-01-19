@@ -1,0 +1,187 @@
+@reference "../../tailwind-utils.css";
+
+/* Booking Page Styles */
+.container {
+    @apply min-h-screen bg-[#F8FAFC] text-slate-900 font-sans pb-20;
+}
+
+/* Hero */
+.hero {
+    @apply bg-white border-b border-slate-200;
+}
+
+.heroContent {
+    @apply max-w-5xl mx-auto px-6 py-16 text-center md:text-left;
+}
+
+.heroTag {
+    @apply inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-bold mb-6;
+}
+
+.heroTitle {
+    @apply text-4xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 leading-tight;
+}
+
+.heroBrand {
+    @apply text-blue-600;
+}
+
+.heroSubtitle {
+    @apply text-lg text-slate-500 max-w-2xl;
+}
+
+/* Main */
+.main {
+    @apply max-w-4xl mx-auto px-6 -mt-8;
+}
+
+/* Stats */
+.statsGrid {
+    @apply grid grid-cols-2 md:grid-cols-3 gap-4 mb-12;
+}
+
+.statsCard {
+    @apply bg-white p-6 rounded-3xl border border-slate-200 shadow-sm;
+}
+
+.statsCardHiddenMobile {
+    @apply hidden md:block;
+}
+
+.statsCardBlue {
+    @apply bg-blue-600 p-6 rounded-3xl shadow-lg shadow-blue-200;
+}
+
+.statsLabel {
+    @apply text-slate-400 text-xs font-bold uppercase tracking-widest mb-1;
+}
+
+.statsLabelBlue {
+    @apply text-blue-100;
+}
+
+.statsValue {
+    @apply text-2xl font-black text-slate-900;
+}
+
+.statsValueWhite {
+    @apply text-2xl font-black text-white;
+}
+
+/* Slots List */
+.slotsContainer {
+    @apply space-y-6;
+}
+
+.slotsHeader {
+    @apply text-xl font-bold mb-6 flex items-center gap-2 text-slate-800;
+}
+
+.emptyState {
+    @apply bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center;
+}
+
+.emptyStateText {
+    @apply text-slate-400 font-medium italic;
+}
+
+/* Slot Card */
+.slotCardBase {
+    @apply relative overflow-hidden bg-white border p-6 md:p-8 rounded-[2rem] transition-all duration-300;
+}
+
+.slotCardBooked {
+    @apply border-slate-100 opacity-60;
+}
+
+.slotCardAvailable {
+    @apply border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-xl;
+}
+
+.cardContent {
+    @apply flex flex-col md:flex-row md:items-center justify-between gap-6;
+}
+
+.cardLeft {
+    @apply flex items-center gap-6;
+}
+
+/* Date Badge */
+.dateBadgeBase {
+    @apply flex flex-col items-center justify-center w-20 h-20 rounded-2xl border;
+}
+
+.dateBadgeBooked {
+    @apply bg-slate-50 border-slate-100;
+}
+
+.dateBadgeAvailable {
+    @apply bg-blue-50 border-blue-100;
+}
+
+.dateMonth {
+    @apply text-[10px] font-black uppercase text-blue-600;
+}
+
+.dateDay {
+    @apply text-3xl font-black text-slate-900;
+}
+
+/* Slot Info */
+.slotTitle {
+    @apply font-extrabold text-xl md:text-2xl text-slate-900 capitalize leading-tight;
+}
+
+.slotDateRange {
+    @apply text-sm font-medium text-slate-500 mb-2;
+}
+
+.contentLink {
+    @apply text-xs font-bold text-blue-500 hover:text-blue-600 underline mb-2 block;
+}
+
+.tagsContainer {
+    @apply flex flex-wrap items-center gap-3;
+}
+
+.tagBase {
+    @apply flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-tighter;
+}
+
+.statusTagBooked {
+    @apply text-xs font-bold text-slate-400 uppercase tracking-tighter;
+}
+
+.statusTagAvailable {
+    @apply flex items-center gap-1 text-xs font-bold text-green-600 uppercase tracking-tighter;
+}
+
+/* Price & Action */
+.cardRight {
+    @apply flex items-center justify-between md:flex-col md:items-end md:justify-center border-t md:border-t-0 pt-4 md:pt-0;
+}
+
+.priceContainer {
+    @apply md:text-right mb-2;
+}
+
+.priceLabel {
+    @apply text-[10px] text-slate-400 font-bold uppercase tracking-widest;
+}
+
+.priceValue {
+    @apply text-4xl font-black text-slate-900 leading-none;
+}
+
+.bookButton {
+    @apply bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-600 transform hover:scale-105 transition-all shadow-lg active:scale-95;
+}
+
+/* Trust Badge */
+.trustBadgeContainer {
+    @apply mt-16 text-center opacity-50;
+}
+
+.trustBadgeText {
+    @apply text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2;
+}

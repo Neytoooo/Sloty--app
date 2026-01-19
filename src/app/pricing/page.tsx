@@ -1,5 +1,6 @@
 import React from 'react';
 import { Zap, Percent } from 'lucide-react';
+import { syncSubscription } from "@/lib/subscription";
 import { createSubscriptionSession } from './actions';
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
@@ -7,10 +8,18 @@ import { ConfettiSideCannons } from "@/components/confetti-side-cannons";
 import { PricingCard } from "@/components/pricing-card";
 
 export default async function Pricing(props: {
-  searchParams: Promise<{ success?: string, canceled?: string }>
+  searchParams: Promise<{ success?: string, canceled?: string, session_id?: string }>
 }) {
   const searchParams = await props.searchParams;
   const showConfetti = searchParams.success === 'true';
+
+  if (searchParams.session_id) {
+    try {
+      await syncSubscription(searchParams.session_id);
+    } catch (e) {
+      console.error("Error syncing subscription:", e);
+    }
+  }
 
   const user = await currentUser();
   let isPro = false;

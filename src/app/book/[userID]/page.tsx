@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Check, ArrowRight, Tag, Calendar as CalendarIcon, Sparkles } from "lucide-react";
 import { createCheckoutSession } from "./checkout";
+import styles from "./booking.module.css";
+
+function cx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
 
 export default async function PublicBookingPage(props: {
   params: Promise<{ userID: string }>
@@ -24,95 +29,99 @@ export default async function PublicBookingPage(props: {
   if (!creator) return notFound();
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans pb-20">
+    <div className={styles.container}>
       {/* --- Hero Section --- */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-6 py-16 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+      <div className={styles.hero}>
+        <div className={styles.heroContent}>
+          <div className={styles.heroTag}>
             <Sparkles size={16} />
             Disponible pour sponsorings
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
+          <h1 className={styles.heroTitle}>
             Propulsez votre marque avec <br />
-            <span className="text-blue-600">@{creator.email.split('@')[0]}</span>
+            <span className={styles.heroBrand}>@{creator.email.split('@')[0]}</span>
           </h1>
-          <p className="text-lg text-slate-500 max-w-2xl">
+          <p className={styles.heroSubtitle}>
             Sélectionnez un créneau disponible ci-dessous pour toucher une audience engagée et qualifiée.
           </p>
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-6 -mt-8">
+      <main className={styles.main}>
         {/* --- Statistiques Rapides / Filtre visuel --- */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Disponibles</p>
-            <p className="text-2xl font-black text-slate-900">{slots.filter(s => !s.isBooked).length} créneaux</p>
+        <div className={styles.statsGrid}>
+          <div className={styles.statsCard}>
+            <p className={styles.statsLabel}>Disponibles</p>
+            <p className={styles.statsValue}>{slots.filter(s => !s.isBooked).length} créneaux</p>
           </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hidden md:block">
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Audience</p>
-            <p className="text-2xl font-black text-slate-900">Vérifiée</p>
+          <div className={cx(styles.statsCard, styles.statsCardHiddenMobile)}>
+            <p className={styles.statsLabel}>Audience</p>
+            <p className={styles.statsValue}>Vérifiée</p>
           </div>
-          <div className="bg-blue-600 p-6 rounded-3xl shadow-lg shadow-blue-200">
-            <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Support</p>
-            <p className="text-2xl font-black text-white">Direct</p>
+          <div className={styles.statsCardBlue}>
+            <p className={cx(styles.statsLabel, styles.statsLabelBlue)}>Support</p>
+            <p className={styles.statsValueWhite}>Direct</p>
           </div>
         </div>
 
         {/* --- Liste des Slots --- */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
+        <div className={styles.slotsContainer}>
+          <h2 className={styles.slotsHeader}>
             <CalendarIcon size={22} className="text-blue-600" />
             Prochains créneaux de diffusion
           </h2>
 
           {slots.length === 0 ? (
-            <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] py-20 text-center">
-              <p className="text-slate-400 font-medium italic">Aucun créneau n'est listé pour le moment.</p>
+            <div className={styles.emptyState}>
+              <p className={styles.emptyStateText}>Aucun créneau n'est listé pour le moment.</p>
             </div>
           ) : (
             slots.map((slot) => (
               <div
                 key={slot.id}
-                className={`group relative overflow-hidden bg-white border ${slot.isBooked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-xl'
-                  } p-6 md:p-8 rounded-[2rem] transition-all duration-300`}
+                className={cx(
+                  styles.slotCardBase,
+                  slot.isBooked ? styles.slotCardBooked : styles.slotCardAvailable
+                )}
               >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className={styles.cardContent}>
 
                   {/* Date & Info */}
-                  <div className="flex items-center gap-6">
-                    <div className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border ${slot.isBooked ? 'bg-slate-50 border-slate-100' : 'bg-blue-50 border-blue-100'
-                      }`}>
-                      <span className="text-[10px] font-black uppercase text-blue-600">
+                  <div className={styles.cardLeft}>
+                    <div className={cx(
+                      styles.dateBadgeBase,
+                      slot.isBooked ? styles.dateBadgeBooked : styles.dateBadgeAvailable
+                    )}>
+                      <span className={styles.dateMonth}>
                         {new Date(slot.date).toLocaleDateString('fr-FR', { month: 'short' })}
                       </span>
-                      <span className="text-3xl font-black text-slate-900">
+                      <span className={styles.dateDay}>
                         {new Date(slot.date).toLocaleDateString('fr-FR', { day: 'numeric' })}
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="font-extrabold text-xl md:text-2xl text-slate-900 capitalize leading-tight">
+                      <h3 className={styles.slotTitle}>
                         {slot.title || slot.displayType}
                       </h3>
-                      <p className="text-sm font-medium text-slate-500 mb-2">
+                      <p className={styles.slotDateRange}>
                         {new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                         {slot.endDate && ` - ${new Date(slot.endDate).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}`}
                       </p>
                       {slot.contentLink && (
-                        <a href={slot.contentLink} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-500 hover:text-blue-600 underline mb-2 block">
+                        <a href={slot.contentLink} target="_blank" rel="noopener noreferrer" className={styles.contentLink}>
                           Voir le support
                         </a>
                       )}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full uppercase tracking-tighter">
+                      <div className={styles.tagsContainer}>
+                        <span className={styles.tagBase}>
                           <Tag size={12} />
                           {slot.displayType}
                         </span>
                         {slot.isBooked ? (
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Indisponible</span>
+                          <span className={styles.statusTagBooked}>Indisponible</span>
                         ) : (
-                          <span className="flex items-center gap-1 text-xs font-bold text-green-600 uppercase tracking-tighter">
+                          <span className={styles.statusTagAvailable}>
                             <Check size={14} /> En ligne
                           </span>
                         )}
@@ -121,15 +130,15 @@ export default async function PublicBookingPage(props: {
                   </div>
 
                   {/* Prix & Action */}
-                  <div className="flex items-center justify-between md:flex-col md:items-end md:justify-center border-t md:border-t-0 pt-4 md:pt-0">
-                    <div className="md:text-right mb-2">
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tarif fixe</p>
-                      <p className="text-4xl font-black text-slate-900 leading-none">{slot.price}€</p>
+                  <div className={styles.cardRight}>
+                    <div className={styles.priceContainer}>
+                      <p className={styles.priceLabel}>Tarif fixe</p>
+                      <p className={styles.priceValue}>{slot.price}€</p>
                     </div>
 
                     {!slot.isBooked && (
                       <form action={async () => { "use server"; await createCheckoutSession(slot.id, slot.price, slot.displayType); }}>
-                        <button type="submit" className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-600 transform hover:scale-105 transition-all shadow-lg active:scale-95">
+                        <button type="submit" className={styles.bookButton}>
                           Réserver <ArrowRight size={20} />
                         </button>
                       </form>
@@ -142,8 +151,8 @@ export default async function PublicBookingPage(props: {
         </div>
 
         {/* --- Trust Badge --- */}
-        <div className="mt-16 text-center opacity-50">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+        <div className={styles.trustBadgeContainer}>
+          <p className={styles.trustBadgeText}>
             Paiement sécurisé par <span className="text-slate-900">Stripe</span>
           </p>
         </div>
