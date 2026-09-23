@@ -67,35 +67,35 @@ function SortableSlot({ slot }: { slot: AdSlot }) {
     const style = {
         transform: CSS.Translate.toString(transform),
         transition,
-        opacity: isDragging ? 0.3 : 1,
+        opacity: isDragging ? 0.4 : 1,
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`group relative bg-slate-800/40 border border-slate-700 p-4 rounded-xl mb-3 flex items-center gap-4 hover:border-slate-500 transition-colors ${slot.isBooked ? "opacity-75" : ""}`}
+            className={`group relative bg-white/80 backdrop-blur-sm border border-white p-4 rounded-2xl mb-3 flex items-center gap-4 hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all ${slot.isBooked ? "opacity-60 bg-slate-50/80" : ""}`}
         >
             {/* Drag Handle */}
-            <div {...attributes} {...listeners} className="cursor-grab text-slate-600 hover:text-slate-300 touch-none">
+            <div {...attributes} {...listeners} className="cursor-grab text-slate-400 hover:text-[#1b405b] touch-none">
                 <GripVertical size={20} />
             </div>
 
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                    <span className={`w-2 h-2 rounded-full ${slot.isBooked ? 'bg-green-500' : 'bg-slate-600'}`} />
-                    <h4 className="text-sm font-bold text-white truncate">{slot.title || slot.displayType}</h4>
+                    <span className={`w-2.5 h-2.5 rounded-full ${slot.isBooked ? 'bg-green-400' : 'bg-blue-400'}`} />
+                    <h4 className="text-sm font-bold text-[#1b405b] truncate">{slot.title || slot.displayType}</h4>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                <div className="flex items-center gap-2 text-xs text-[#163144]/70 font-medium">
                     <Calendar size={12} />
                     <span>{new Date(slot.date).toLocaleDateString()}</span>
                     {slot.endDate && <span>- {new Date(slot.endDate).toLocaleDateString()}</span>}
                 </div>
             </div>
 
-            <div className="text-right">
-                <p className="text-sm font-black text-white">{slot.price}€</p>
-                <Link href={`/dashboard?slotId=${slot.id}`} className="text-[10px] text-blue-400 hover:underline">
+            <div className="text-right flex flex-col items-end gap-1">
+                <p className="text-sm font-black text-[#1b405b] bg-white/60 px-2 py-1 rounded-lg border border-white/80">{slot.price}€</p>
+                <Link href={`/dashboard?slotId=${slot.id}`} className="text-[10px] font-bold text-blue-500 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
                     Détails
                 </Link>
             </div>
@@ -111,16 +111,16 @@ function CategoryContainer({ category, slots, onDeleteCategory }: { category: Ca
     });
 
     return (
-        <div ref={setNodeRef} className="bg-[#0f172a] border border-slate-800 rounded-3xl p-5 w-full md:w-[350px] shrink-0 flex flex-col max-h-[800px]">
-            <div className="flex items-center justify-between mb-4 px-2">
-                <h3 className="font-bold text-slate-300 flex items-center gap-2">
+        <div ref={setNodeRef} className="bg-white/40 backdrop-blur-xl border border-white/70 shadow-[0_8px_32px_rgba(0,0,0,0.03)] rounded-[2.5rem] p-6 w-full md:w-[350px] shrink-0 flex flex-col max-h-[800px]">
+            <div className="flex items-center justify-between mb-5 px-2">
+                <h3 className="font-bold text-[#1b405b] flex items-center gap-3 text-lg">
                     {typeof category === "string" ? "Non classé" : category.name}
-                    <span className="bg-slate-800 text-slate-500 text-xs px-2 py-0.5 rounded-full">{slots.length}</span>
+                    <span className="bg-white/80 border border-white/60 text-[#1b405b] font-black text-xs px-2.5 py-1 rounded-full shadow-sm">{slots.length}</span>
                 </h3>
                 {typeof category !== "string" && (
                     <button
                         onClick={() => onDeleteCategory && onDeleteCategory(category.id)}
-                        className="text-slate-600 hover:text-red-500 transition-colors"
+                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-all"
                         title="Supprimer la catégorie"
                     >
                         <Trash2 size={16} />
@@ -135,7 +135,7 @@ function CategoryContainer({ category, slots, onDeleteCategory }: { category: Ca
                     ))}
                 </SortableContext>
                 {slots.length === 0 && (
-                    <div className="text-center py-8 border-2 border-dashed border-slate-800 rounded-xl text-slate-600 text-xs">
+                    <div className="text-center py-10 border-2 border-dashed border-white/60 bg-white/30 rounded-2xl text-[#163144]/60 text-sm font-semibold">
                         Déposez un créneau ici
                     </div>
                 )}
@@ -274,17 +274,17 @@ export default function CategoryBoard({ initialSlots, initialCategories }: Props
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex items-center gap-4 mb-6 overflow-x-auto pb-2">
+            <div className="flex items-center gap-4 mb-6 overflow-x-auto pb-2 pl-2">
                 {/* Create Category Button */}
                 {isCreating ? (
-                    <form onSubmit={handleCreateCategory} className="flex items-center gap-2 bg-slate-800 p-2 rounded-xl border border-slate-700">
-                        <input autoFocus name="name" placeholder="Nom..." className="bg-transparent text-white w-32 outline-none text-sm px-2" />
-                        <button type="submit" className="text-green-400 hover:text-green-300"><Plus size={18} /></button>
+                    <form onSubmit={handleCreateCategory} className="flex items-center gap-2 bg-white/80 p-2.5 rounded-full border border-white shadow-sm">
+                        <input autoFocus name="name" placeholder="Nom de la collection..." className="bg-transparent text-[#1b405b] w-40 outline-none text-sm px-3 placeholder:text-slate-400 font-medium" />
+                        <button type="submit" className="text-white bg-blue-600 hover:bg-blue-500 p-1.5 rounded-full shadow-md transition-all"><Plus size={16} /></button>
                     </form>
                 ) : (
                     <button
                         onClick={() => setIsCreating(true)}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg"
+                        className="flex items-center gap-2 bg-white/60 hover:bg-white text-[#1b405b] px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm border border-white/80"
                     >
                         <FolderPlus size={16} />
                         Nouvelle collection
@@ -299,7 +299,7 @@ export default function CategoryBoard({ initialSlots, initialCategories }: Props
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <div className="flex items-start gap-6 overflow-x-auto pb-10 min-h-[500px]">
+                <div className="flex items-start gap-8 overflow-x-auto pb-10 min-h-[500px]">
                     {/* Uncategorized Column */}
                     <CategoryContainer
                         category="uncategorized"
