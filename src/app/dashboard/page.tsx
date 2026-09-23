@@ -1,17 +1,22 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { createAdSlot } from "./actions";
-import { Plus, Euro, MousePointer2, ExternalLink, X, Trash2, Home, Link as LinkIcon } from "lucide-react";
+import { 
+  Euro, 
+  MousePointer2, 
+  ExternalLink, 
+  LayoutDashboard, 
+  Settings, 
+  Megaphone,
+  Link as LinkIcon 
+} from "lucide-react";
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import CategoryBoard from "@/components/dashboard/category-board";
+import CreateSlotModal from "@/components/dashboard/create-slot-modal";
 import styles from "./dashboard.module.css";
 
 export const dynamic = "force-dynamic";
-
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
 
 export default async function DashboardPage({
   searchParams,
@@ -58,114 +63,112 @@ export default async function DashboardPage({
     : slots.reduce((acc, s) => acc + (s.booking?.clicks || 0), 0);
 
   return (
-    <div className={styles.pageContainer}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.headerTitle}>
-            Sponsio Dashboard
+    <div className={styles.dashboardLayout}>
+      
+      {/* Sidebar Navigation */}
+      <aside className={styles.sidebar}>
+        <div>
+          <div className={styles.sidebarBrand}>Sponsio</div>
+          <nav className={styles.sidebarNav}>
+            <Link href="/dashboard" className={styles.sidebarLinkActive}>
+              <LayoutDashboard size={18} />
+              Tableau de bord
+            </Link>
+            <Link href="/explore" className={styles.sidebarLink}>
+              <Megaphone size={18} />
+              Catalogue Public
+            </Link>
+            <Link href={shareUrl} target="_blank" className={styles.sidebarLink}>
+              <ExternalLink size={18} />
+              Ma Page Créateur
+            </Link>
+            <Link href="#" className={styles.sidebarLink}>
+              <Settings size={18} />
+              Paramètres
+            </Link>
+          </nav>
+        </div>
+        
+        <div className={styles.sidebarFooter}>
+          <UserButton showName />
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className={styles.mainWrapper}>
+        
+        {/* Topbar */}
+        <header className={styles.topbar}>
+          <h1 className={styles.pageTitle}>
+            {selectedSlot ? `Détails : ${selectedSlot.displayType}` : "Aperçu général"}
           </h1>
-          <div className={styles.headerActions}>
-            <Link
-              href="/"
-              className={styles.backButton}
-            >
-              <Home size={14} />
-              <span>Retour</span>
-            </Link>
-            <div className={styles.shareContainer}>
+          <div className={styles.topbarActions}>
+            <a href={shareUrl} target="_blank" rel="noopener noreferrer" className={styles.shareContainer}>
               <LinkIcon size={14} className={styles.shareIcon} />
-              <span className={styles.shareText}>{shareUrl}</span>
-            </div>
+              <span className={styles.shareText}>Lien de réservation</span>
+            </a>
+            <CreateSlotModal />
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className={styles.main}>
-
-        {/* --- STATS --- */}
-        <div className={styles.statsHeader}>
-          <h2 className={styles.statsTitle}>
-            {selectedSlot ? `Détails : ${selectedSlot.displayType}` : "Statistiques Globales"}
-          </h2>
-          {selectedSlot && (
-            <Link href="/dashboard" className={styles.viewAllLink}>
-              <X size={14} /> Voir le total
-            </Link>
-          )}
-        </div>
-
-        <div className={styles.statsGrid}>
-          <div className={cx(styles.statCardBase, selectedSlot ? styles.borderGreen : styles.borderDefault)}>
-            <div className={styles.statIconWrapperGreen}>
-              <Euro size={20} />
-              <span className={styles.statLabel}>Argent généré</span>
-            </div>
-            <p className={styles.statValue}>{displayRevenue}€</p>
-          </div>
-
-          <div className={cx(styles.statCardBase, selectedSlot ? styles.borderBlue : styles.borderDefault)}>
-            <div className={styles.statIconWrapperBlue}>
-              <MousePointer2 size={20} />
-              <span className={styles.statLabel}>Nombre de clics</span>
-            </div>
-            <p className={styles.statValue}>{displayClicks}</p>
-          </div>
-
-          <div className={cx(styles.statCardBase, styles.borderDefault)}>
-            <div className={styles.statIconWrapperDefault}>
-              <ExternalLink size={20} />
-              <span className={styles.statLabel}>Page Publique</span>
-            </div>
-            <Link href={shareUrl} target="_blank" className={styles.publicPageLink}>
-              {shareUrl}
-            </Link>
-          </div>
-        </div>
-
-        <div className={styles.contentGrid}>
-
-          {/* --- FORMULAIRE --- */}
-          <div className={styles.formColumn}>
-            <div className={styles.formCard}>
-              <h2 className={styles.formTitle}>Nouveau créneau</h2>
-              <form action={createAdSlot} className={styles.formStack}>
-                <input type="date" name="date" required className={styles.input} />
-                <div className={styles.inputWithIconWrapper}>
-                  <input type="number" name="price" placeholder="Prix (€)" required className={styles.inputWithIcon} />
-                  <Euro size={16} className={styles.inputIcon} />
+        {/* Scrollable Content */}
+        <main className={styles.scrollableContent}>
+          
+          {/* Bento Grid Stats */}
+          <div className={styles.bentoGrid}>
+            
+            {/* Primary Stat (Revenue) */}
+            <div className={`${styles.bentoCard} ${styles.bentoCardPrimary}`}>
+              <div>
+                <div className={`${styles.bentoIconWrapper} ${styles.bentoIconPrimary}`}>
+                  <Euro size={24} />
                 </div>
-
-                <div className={styles.dateGrid}>
-                  <input type="text" name="title" placeholder="Titre (ex: Youtube)" className={styles.input} />
-                  <input type="date" name="endDate" className={styles.input} />
-                </div>
-                <input type="url" name="contentLink" placeholder="Lien du contenu (ex: https://youtube.com/...)" className={styles.input} />
-
-                <select name="displayType" className={styles.input}>
-                  <option value="Haut de Newsletter">Haut de Newsletter</option>
-                  <option value="Milieu de Newsletter">Milieu de Newsletter</option>
-                  <option value="Sponsoring Podcast">Sponsoring Podcast</option>
-                </select>
-                <button type="submit" className={styles.submitButton}>
-                  Publier
-                </button>
-              </form>
+                <h3 className={`${styles.bentoLabel} ${styles.bentoLabelPrimary}`}>Revenus générés</h3>
+                <p className={`${styles.bentoValue} ${styles.bentoValuePrimary}`}>{displayRevenue} €</p>
+              </div>
+              <div className={styles.bentoDecoration}></div>
             </div>
+
+            {/* Secondary Stat (Clicks) */}
+            <div className={styles.bentoCard}>
+              <div>
+                <div className={`${styles.bentoIconWrapper} ${styles.bentoIconSecondary}`}>
+                  <MousePointer2 size={24} />
+                </div>
+                <h3 className={styles.bentoLabel}>Clics totaux</h3>
+                <p className={`${styles.bentoValue} ${styles.bentoValueSecondary}`}>{displayClicks}</p>
+              </div>
+            </div>
+
+            {/* Third Stat (Active Slots) */}
+            <div className={styles.bentoCard}>
+              <div>
+                <div className={`${styles.bentoIconWrapper} ${styles.bentoIconSecondary}`}>
+                  <LayoutDashboard size={24} />
+                </div>
+                <h3 className={styles.bentoLabel}>Créneaux Actifs</h3>
+                <p className={`${styles.bentoValue} ${styles.bentoValueSecondary}`}>
+                  {slots.filter(s => !s.isBooked).length} <span className="text-lg text-slate-400 font-medium">/ {slots.length}</span>
+                </p>
+              </div>
+            </div>
+
           </div>
 
-          {/* --- LIST & DRAG AND DROP --- */}
-          <div className={styles.listColumn}>
-            <div className={styles.slotsHeader}>
-              <h2 className={styles.slotsTitle}>
+          {/* Kanban Board */}
+          <div className={styles.boardSection}>
+            <div className={styles.boardHeader}>
+              <h2 className={styles.boardTitle}>
                 <span className={styles.titleIndicator}></span>
-                Mes Espaces Publicitaires
+                Gestion des Espaces
               </h2>
-
-              <CategoryBoard initialSlots={slots} initialCategories={categories} />
             </div>
+            
+            <CategoryBoard initialSlots={slots} initialCategories={categories} />
           </div>
-        </div>
-      </main>
+
+        </main>
+      </div>
     </div>
   );
 }
