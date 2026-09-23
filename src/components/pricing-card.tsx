@@ -38,9 +38,9 @@ export function PricingCard({ plan }: PricingCardProps) {
 
     return (
         <>
-            <div className={`relative p-10 rounded-[2.5rem] border-2 transition-all ${plan.highlight
-                ? 'bg-slate-900 text-white border-blue-600 shadow-2xl scale-105 z-10'
-                : 'bg-white border-slate-200 text-slate-900 shadow-sm hover:border-slate-300'
+            <div className={`relative p-10 rounded-[2.5rem] border-2 transition-all backdrop-blur-xl ${plan.highlight
+                ? 'bg-slate-900/90 text-white border-blue-500/50 shadow-2xl scale-105 z-10'
+                : 'bg-white/60 border-white/80 text-slate-900 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:bg-white/80'
                 }`}>
 
                 {/* Checkmark vert si abonné sur le plan highlight */}
