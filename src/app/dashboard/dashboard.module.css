@@ -1,164 +1,134 @@
 @reference "../tailwind-utils.css";
 
-/* Dashboard Styles */
-.pageContainer {
-    @apply min-h-screen bg-[#0f172a] text-slate-200 font-sans pb-20;
+/* Dashboard Layout */
+.dashboardLayout {
+    @apply flex h-screen bg-[#f8fafc] text-[#0f172a] font-sans overflow-hidden;
+    font-family: var(--font-urbanist), sans-serif;
 }
 
-/* Header */
-.header {
-    @apply border-b border-slate-800 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-10;
+/* Sidebar */
+.sidebar {
+    @apply w-64 h-full bg-white border-r border-slate-200 flex flex-col justify-between py-6 px-4 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)];
 }
 
-.headerContent {
-    @apply max-w-7xl mx-auto px-6 py-4 flex justify-between items-center;
+.sidebarBrand {
+    @apply text-2xl font-black tracking-tighter text-[#0f172a] mb-10 px-4;
 }
 
-.headerTitle {
-    @apply text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent;
+.sidebarNav {
+    @apply flex flex-col gap-2 flex-grow;
 }
 
-.headerActions {
+.sidebarLink {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-[#0f172a] hover:bg-slate-50 transition-colors;
+}
+
+.sidebarLinkActive {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-blue-600 bg-blue-50 transition-colors;
+}
+
+.sidebarFooter {
+    @apply mt-auto pt-6 border-t border-slate-100 px-2;
+}
+
+/* Main Content Area */
+.mainWrapper {
+    @apply flex-1 flex flex-col h-full overflow-hidden relative;
+    background-image: radial-gradient(circle at top right, #e0e7ff40, transparent 40%),
+                      radial-gradient(circle at bottom left, #e0f2fe40, transparent 40%);
+}
+
+.topbar {
+    @apply flex items-center justify-between px-10 py-6 border-b border-slate-200/50 bg-white/40 backdrop-blur-md z-10 sticky top-0;
+}
+
+.pageTitle {
+    @apply text-2xl font-black text-[#0f172a] tracking-tight;
+}
+
+.topbarActions {
     @apply flex items-center gap-4;
 }
 
-.backButton {
-    @apply flex items-center gap-2 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700/50 hover:text-white transition-all text-slate-400;
-}
-
 .shareContainer {
-    @apply flex items-center gap-4 text-xs font-medium bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700;
+    @apply flex items-center gap-2 text-sm font-bold bg-white px-4 py-2.5 rounded-full shadow-sm border border-slate-200 text-slate-700 hover:shadow-md transition-shadow cursor-pointer;
 }
 
 .shareIcon {
-    @apply text-blue-400;
+    @apply text-blue-500;
 }
 
 .shareText {
-    @apply truncate max-w-[200px];
+    @apply truncate max-w-[200px] text-slate-600 font-medium;
 }
 
-/* Main */
-.main {
-    @apply max-w-7xl mx-auto px-6 py-10;
+/* Scrollable Content */
+.scrollableContent {
+    @apply flex-1 overflow-y-auto p-10 pb-32;
 }
 
-/* Stats */
-.statsHeader {
-    @apply mb-8 flex items-center justify-between;
-}
-
-.statsTitle {
-    @apply text-sm font-black uppercase tracking-[0.3em] text-slate-500;
-}
-
-.viewAllLink {
-    @apply text-xs flex items-center gap-1 text-blue-400 hover:text-white transition;
-}
-
-.statsGrid {
+/* Bento Grid Stats */
+.bentoGrid {
     @apply grid grid-cols-1 md:grid-cols-3 gap-6 mb-12;
 }
 
-.statCardBase {
-    @apply bg-slate-800/40 border p-8 rounded-[2.5rem] transition-all;
+.bentoCard {
+    @apply bg-white border border-slate-100 rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-between hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow;
 }
 
-.borderGreen {
-    @apply border-green-500/50;
+.bentoCardPrimary {
+    @apply bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white border-transparent md:col-span-1;
 }
 
-.borderBlue {
-    @apply border-blue-500/50;
+.bentoIconWrapper {
+    @apply w-12 h-12 rounded-full flex items-center justify-center mb-6;
 }
 
-.borderDefault {
-    @apply border-slate-700;
+.bentoIconPrimary {
+    @apply bg-white/10 text-blue-400;
 }
 
-.statIconWrapperGreen {
-    @apply flex items-center gap-3 text-green-400 mb-4;
+.bentoIconSecondary {
+    @apply bg-blue-50 text-blue-600;
 }
 
-.statIconWrapperBlue {
-    @apply flex items-center gap-3 text-blue-400 mb-4;
+.bentoLabel {
+    @apply text-sm font-bold uppercase tracking-wider opacity-70 mb-1;
 }
 
-.statIconWrapperDefault {
-    @apply flex items-center gap-3 text-slate-500 mb-4;
+.bentoLabelPrimary {
+    @apply text-blue-200;
 }
 
-.statLabel {
-    @apply text-[10px] font-black uppercase tracking-widest;
+.bentoValue {
+    @apply text-4xl font-black tracking-tight;
 }
 
-.statValue {
-    @apply text-4xl font-black text-white;
+.bentoValuePrimary {
+    @apply text-white;
 }
 
-.publicPageLink {
-    @apply text-xs font-bold text-blue-400 truncate block;
+.bentoValueSecondary {
+    @apply text-[#0f172a];
 }
 
-/* Layout Grid */
-.contentGrid {
-    @apply grid grid-cols-1 lg:grid-cols-3 gap-10;
+.bentoDecoration {
+    @apply absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl;
 }
 
-.formColumn {
-    @apply lg:col-span-1;
+/* Board Section */
+.boardSection {
+    @apply flex flex-col gap-6;
 }
 
-.listColumn {
-    @apply lg:col-span-2 space-y-6;
+.boardHeader {
+    @apply flex items-center justify-between mb-2;
 }
 
-/* Form */
-.formCard {
-    @apply bg-slate-800/40 border border-slate-700 p-8 rounded-[2rem];
-}
-
-.formTitle {
-    @apply text-lg font-bold mb-6 text-white;
-}
-
-.formStack {
-    @apply space-y-5;
-}
-
-.input {
-    @apply w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white;
-}
-
-.inputWithIconWrapper {
-    @apply relative;
-}
-
-.inputWithIcon {
-    @apply w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pl-10 text-white;
-}
-
-.inputIcon {
-    @apply absolute left-3 top-4 text-slate-500;
-}
-
-.dateGrid {
-    @apply grid grid-cols-2 gap-4;
-}
-
-.submitButton {
-    @apply w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg;
-}
-
-/* Slots List Header */
-.slotsHeader {
-    @apply mb-0;
-}
-
-.slotsTitle {
-    @apply text-2xl font-black text-white mb-6 flex items-center gap-3;
+.boardTitle {
+    @apply text-xl font-bold text-[#0f172a] tracking-tight flex items-center gap-3;
 }
 
 .titleIndicator {
-    @apply bg-blue-600 w-2 h-8 rounded-full;
+    @apply w-1.5 h-6 bg-blue-600 rounded-full;
 }
