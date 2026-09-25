@@ -1,0 +1,119 @@
+"use client";
+
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Environment, Float, MeshTransmissionMaterial, RoundedBox } from "@react-three/drei";
+import { useScroll } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import * as THREE from "three";
+
+function Scene() {
+  const { scrollYProgress } = useScroll();
+  
+  const coinRef = useRef<THREE.Group>(null!);
+  const adSlotRef = useRef<THREE.Group>(null!);
+  const audienceRef = useRef<THREE.Group>(null!);
+
+  useFrame(() => {
+    const scroll = scrollYProgress.get(); // Number between 0 and 1
+
+    // Coin (Monetization) - Top Left moving down
+    if (coinRef.current) {
+      coinRef.current.rotation.y = scroll * Math.PI * 2;
+      coinRef.current.position.y = 4 - (scroll * 8); 
+    }
+
+    // Ad Slot (Billboard) - Right moving up
+    if (adSlotRef.current) {
+      adSlotRef.current.rotation.z = scroll * -Math.PI * 2;
+      adSlotRef.current.position.y = -2 + (scroll * 6); 
+    }
+
+    // Audience (Torus) - Bottom Left moving up
+    if (audienceRef.current) {
+      audienceRef.current.rotation.x = (Math.PI / 4) + (scroll * Math.PI * 1.25);
+      audienceRef.current.rotation.y = scroll * Math.PI * 2;
+      audienceRef.current.position.y = -5 + (scroll * 8); 
+    }
+  });
+
+  const materialProps = {
+    backside: false,
+    samples: 4,
+    thickness: 1,
+    chromaticAberration: 0.1,
+    anisotropy: 0.1,
+    clearcoat: 1,
+    clearcoatRoughness: 0.1,
+    roughness: 0.15,
+    ior: 1.5,
+    transmission: 1,
+  };
+
+  return (
+    <>
+      <Environment preset="studio" />
+      <ambientLight intensity={1.5} />
+      <directionalLight position={[10, 15, 10]} intensity={3} color="#ffffff" />
+      <directionalLight position={[-10, -15, -10]} intensity={1} color="#f8fafc" />
+      
+      {/* Monetization / Coin (Cylinder) */}
+      <Float speed={2} rotationIntensity={1} floatIntensity={1}>
+        <group ref={coinRef} position={[-6, 4, -4]} rotation-x={0.5}>
+          <mesh>
+            <cylinderGeometry args={[1.5, 1.5, 0.3, 32]} />
+            <MeshTransmissionMaterial 
+              {...materialProps}
+              color="#e2e8f0" 
+              attenuationColor="#4ade80" // Soft green
+              attenuationDistance={3}
+            />
+          </mesh>
+        </group>
+      </Float>
+
+      {/* Ad Slot (Rounded Box / Billboard) */}
+      <Float speed={1.5} rotationIntensity={1.5} floatIntensity={1.5}>
+        <group ref={adSlotRef} position={[7, -2, -6]} rotation-y={0.3}>
+          <RoundedBox args={[4, 2.5, 0.4]} radius={0.3} smoothness={4}>
+            <MeshTransmissionMaterial 
+              {...materialProps}
+              color="#e2e8f0"
+              attenuationColor="#3b82f6" // Soft blue
+              attenuationDistance={3}
+            />
+          </RoundedBox>
+        </group>
+      </Float>
+
+      {/* Audience / Network (Torus / Ring) */}
+      <Float speed={2.5} rotationIntensity={0.8} floatIntensity={2}>
+        <group ref={audienceRef} position={[-7, -5, -8]}>
+          <mesh>
+            <torusGeometry args={[1.8, 0.6, 32, 100]} />
+            <MeshTransmissionMaterial 
+              {...materialProps}
+              color="#e2e8f0"
+              attenuationColor="#a855f7" // Soft purple
+              attenuationDistance={3}
+            />
+          </mesh>
+        </group>
+      </Float>
+    </>
+  );
+}
+
+export default function Background3D() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none opacity-80" style={{ perspective: '1000px' }}>
+      <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
+        <Scene />
+      </Canvas>
+    </div>
+  );
+}

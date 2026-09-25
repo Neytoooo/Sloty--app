@@ -8,12 +8,24 @@ import {
   LayoutDashboard, 
   Settings, 
   Megaphone,
-  Link as LinkIcon 
+  Link as LinkIcon,
+  Search,
+  Bell,
+  Plus,
+  Download,
+  CalendarDays,
+  ChevronDown,
+  TrendingUp,
+  Users,
+  Home
 } from "lucide-react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import CategoryBoard from "@/components/dashboard/category-board";
 import CreateSlotModal from "@/components/dashboard/create-slot-modal";
+import RevenueChart from "@/components/dashboard/revenue-chart";
+import WalletCard from "@/components/dashboard/wallet-card";
+import DashboardClient from "@/components/dashboard/dashboard-client";
 import styles from "./dashboard.module.css";
 
 export const dynamic = "force-dynamic";
@@ -62,17 +74,29 @@ export default async function DashboardPage({
     ? (selectedSlot.booking?.clicks || 0)
     : slots.reduce((acc, s) => acc + (s.booking?.clicks || 0), 0);
 
+  // Formatting helpers
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('fr-FR').format(num);
+  };
+
   return (
     <div className={styles.dashboardLayout}>
       
       {/* Sidebar Navigation */}
       <aside className={styles.sidebar}>
         <div>
-          <div className={styles.sidebarBrand}>Sponsio</div>
+          <div className={styles.sidebarBrand}>
+            Sponsio
+          </div>
+          
           <nav className={styles.sidebarNav}>
             <Link href="/dashboard" className={styles.sidebarLinkActive}>
               <LayoutDashboard size={18} />
               Tableau de bord
+              <span className="ml-auto bg-blue-100 text-blue-600 py-0.5 px-2 rounded-md text-xs font-bold">{slots.length}</span>
             </Link>
             <Link href="/explore" className={styles.sidebarLink}>
               <Megaphone size={18} />
@@ -86,11 +110,22 @@ export default async function DashboardPage({
               <Settings size={18} />
               Paramètres
             </Link>
+            <Link href="/" className={styles.sidebarLink}>
+              <Home size={18} />
+              Retour à l'accueil
+            </Link>
           </nav>
         </div>
         
         <div className={styles.sidebarFooter}>
-          <UserButton showName />
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-2xl text-white mb-6 shadow-xl shadow-blue-900/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+            <h4 className="font-bold mb-1">Passer Pro !</h4>
+            <p className="text-blue-100 text-xs mb-4">0% de commission sur toutes vos ventes.</p>
+            <button className="w-full bg-white text-blue-600 font-bold py-2 rounded-lg text-sm shadow-sm hover:bg-slate-50 transition-colors">
+              Upgrade
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -99,72 +134,54 @@ export default async function DashboardPage({
         
         {/* Topbar */}
         <header className={styles.topbar}>
-          <h1 className={styles.pageTitle}>
-            {selectedSlot ? `Détails : ${selectedSlot.displayType}` : "Aperçu général"}
-          </h1>
-          <div className={styles.topbarActions}>
-            <a href={shareUrl} target="_blank" rel="noopener noreferrer" className={styles.shareContainer}>
-              <LinkIcon size={14} className={styles.shareIcon} />
-              <span className={styles.shareText}>Lien de réservation</span>
-            </a>
-            <CreateSlotModal />
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative w-96 hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Rechercher..." 
+                className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-all"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+                <span className="text-[10px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200">⌘</span>
+                <span className="text-[10px] font-bold text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200">K</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+              <Bell size={18} />
+            </button>
+            <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: "w-10 h-10" } }} />
           </div>
         </header>
 
         {/* Scrollable Content */}
         <main className={styles.scrollableContent}>
           
-          {/* Bento Grid Stats */}
-          <div className={styles.bentoGrid}>
-            
-            {/* Primary Stat (Revenue) */}
-            <div className={`${styles.bentoCard} ${styles.bentoCardPrimary}`}>
-              <div>
-                <div className={`${styles.bentoIconWrapper} ${styles.bentoIconPrimary}`}>
-                  <Euro size={24} />
-                </div>
-                <h3 className={`${styles.bentoLabel} ${styles.bentoLabelPrimary}`}>Revenus générés</h3>
-                <p className={`${styles.bentoValue} ${styles.bentoValuePrimary}`}>{displayRevenue} €</p>
-              </div>
-              <div className={styles.bentoDecoration}></div>
-            </div>
+          {/* Draggable Widgets Client */}
+          <DashboardClient slots={slots} />
 
-            {/* Secondary Stat (Clicks) */}
-            <div className={styles.bentoCard}>
-              <div>
-                <div className={`${styles.bentoIconWrapper} ${styles.bentoIconSecondary}`}>
-                  <MousePointer2 size={24} />
-                </div>
-                <h3 className={styles.bentoLabel}>Clics totaux</h3>
-                <p className={`${styles.bentoValue} ${styles.bentoValueSecondary}`}>{displayClicks}</p>
-              </div>
-            </div>
-
-            {/* Third Stat (Active Slots) */}
-            <div className={styles.bentoCard}>
-              <div>
-                <div className={`${styles.bentoIconWrapper} ${styles.bentoIconSecondary}`}>
-                  <LayoutDashboard size={24} />
-                </div>
-                <h3 className={styles.bentoLabel}>Créneaux Actifs</h3>
-                <p className={`${styles.bentoValue} ${styles.bentoValueSecondary}`}>
-                  {slots.filter(s => !s.isBooked).length} <span className="text-lg text-slate-400 font-medium">/ {slots.length}</span>
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Kanban Board */}
-          <div className={styles.boardSection}>
-            <div className={styles.boardHeader}>
-              <h2 className={styles.boardTitle}>
-                <span className={styles.titleIndicator}></span>
-                Gestion des Espaces
+          {/* Board Section */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-2 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-50 mb-2">
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-3">
+                <span className="w-1.5 h-5 bg-blue-600 rounded-full"></span>
+                Vos espaces en vente
               </h2>
+              <div className="flex items-center gap-2">
+                <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-bold bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
+                  <LinkIcon size={14} />
+                  Lien public
+                </a>
+                <CreateSlotModal />
+              </div>
             </div>
             
-            <CategoryBoard initialSlots={slots} initialCategories={categories} />
+            <div className="p-4 bg-slate-50/50 rounded-xl min-h-[400px]">
+              <CategoryBoard initialSlots={slots} initialCategories={categories} shareUrl={shareUrl} />
+            </div>
           </div>
 
         </main>

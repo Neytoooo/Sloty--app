@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 import { redirect } from "next/navigation";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "dummy_key_to_prevent_crash_at_build");
 
 export async function createAdSlot(formData: FormData) {
   const { userId } = await auth();
@@ -21,6 +21,7 @@ export async function createAdSlot(formData: FormData) {
   const endDate = endDateRaw ? new Date(endDateRaw) : null;
   const title = formData.get("title") as string;
   const contentLink = formData.get("contentLink") as string;
+  const description = formData.get("description") as string;
 
   // ON GARDE TES OPTIONS EXACTES ICI
   const displayType = (formData.get("displayType") as string) || "Haut de Newsletter";
@@ -44,6 +45,7 @@ export async function createAdSlot(formData: FormData) {
       displayType: displayType,
       title: title,
       contentLink: contentLink,
+      description: description,
       creator: { connect: { id: dbUser.id } }
     },
   });

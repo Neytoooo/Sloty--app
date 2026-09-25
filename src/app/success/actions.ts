@@ -10,11 +10,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Fonction de modération avec Gemini
 async function verifyImageContent(fileBuffer: Buffer, mimeType: string) {
   try {
+    console.log("[GEMINI MODERATION] Initialisation de l'API Gemini...");
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
-    const prompt = "Analyse cette image. Réponds uniquement par 'SAFE' si elle est appropriée pour une publicité sur une newsletter pro, ou 'UNSAFE' si elle contient du contenu choquant, sexuel, violent ou de la propagande. Si tu n'es pas sûr, réponds 'UNSAFE'.";
+    const prompt = "Analyse cette image. Réponds uniquement par 'SAFE' si l'image est correcte pour une publicité tout public (y compris jeux vidéo, divertissement, etc.), ou 'UNSAFE' si elle contient explicitement du contenu choquant, sexuel, très violent, illégal ou de la propagande haineuse. Si c'est une simple image de jeu vidéo comme Minecraft, réponds 'SAFE'.";
 
+    console.log("[GEMINI MODERATION] Préparation de l'image (Taille:", fileBuffer.length, "bytes, Type:", mimeType, ")");
     const imagePart = {
       inlineData: {
         data: fileBuffer.toString("base64"),
@@ -22,15 +24,16 @@ async function verifyImageContent(fileBuffer: Buffer, mimeType: string) {
       },
     };
 
+    console.log("[GEMINI MODERATION] Envoi de la requête à Gemini...");
     const result = await model.generateContent([prompt, imagePart]);
     const response = await result.response;
     const text = response.text().trim().toUpperCase();
 
-    console.log(`[GEMINI MODERATION] Result: ${text}`);
+    console.log(`[GEMINI MODERATION] Réponse brute de Gemini: "${text}"`);
 
     return text.includes("SAFE") && !text.includes("UNSAFE");
-  } catch (error) {
-    console.error("[GEMINI MODERATION] Error:", error);
+  } catch (error: any) {
+    console.error("[GEMINI MODERATION] Erreur API:", error?.message || error);
     // En cas d'erreur de l'API (ex: quota, clé invalide), on peut décider de laisser passer ou bloquer. 
     // Pour la sécurité, on bloque par défaut ou on log l'erreur.
     // Ici, je retourne false pour être safe, mais tu peux changer ça.
@@ -39,6 +42,9 @@ async function verifyImageContent(fileBuffer: Buffer, mimeType: string) {
 }
 
 export async function handleAssetsUpload(formData: FormData) {
+  console.log("-----------------------------------------");
+  console.log("[UPLOAD] Début de l'action handleAssetsUpload");
+  
   // Configuration Cloudinary utilisant tes variables d'environnement [cite: 181]
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -50,9 +56,15 @@ export async function handleAssetsUpload(formData: FormData) {
   const link = formData.get("link") as string;
   const slotId = formData.get("slotId") as string;
 
-  if (!file || !link || !slotId) return;
+  console.log(`[UPLOAD] Données reçues: slotId=${slotId}, link=${link}, file size=${file?.size} bytes`);
+
+  if (!file || file.size === 0 || !link || !slotId) {
+    console.error("[UPLOAD] ERREUR: Champs manquants ou image vide.");
+    redirect(`/success?slotId=${slotId}&error=missing_fields`);
+  }
 
   // 0. VÉRIFICATION GEMINI AVANT UPLOAD
+  console.log("[UPLOAD] Conversion de l'image en buffer...");
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
@@ -60,24 +72,28 @@ export async function handleAssetsUpload(formData: FormData) {
   const { userId } = await auth();
   let isSafe = false;
 
+  console.log(`[UPLOAD] Vérification de l'utilisateur Clerk (${userId})...`);
   const user = userId ? await prisma.user.findUnique({ where: { clerkId: userId } }) : null;
 
   if (user?.isAdmin) {
-    console.log("[MODERATION] Skipped for Admin");
+    console.log("[MODERATION] Utilisateur Admin -> Vérification Gemini ignorée");
     isSafe = true;
   } else {
+    console.log("[MODERATION] Utilisateur standard -> Lancement de la vérification Gemini");
     isSafe = await verifyImageContent(buffer, file.type);
   }
 
   if (!isSafe) {
-    console.warn(`[MODERATION] Image rejected for slot ${slotId}`);
+    console.warn(`[MODERATION] ❌ Image rejetée pour le slot ${slotId}`);
     // Redirection avec erreur ou lancer une erreur pour que le client le sache
     // Comme c'est un serveur action appelé par un form, on peut redirect avec un param error
-    redirect(`/dashboard/setup-business?error=moderation_failed`);
-    // Note: ajuster l'URL de redirection selon où se trouve le formulaire
+    redirect(`/success?slotId=${slotId}&error=moderation_failed`);
+  } else {
+    console.log(`[MODERATION] ✅ Image approuvée !`);
   }
 
   // 1. RÉCUPÉRATION DU PRIX RÉEL [cite: 22, 92]
+  console.log(`[UPLOAD] Recherche du slot ${slotId} en BDD...`);
   // On cherche le prix défini par le créateur pour ce slot précis
   const slot = await prisma.adSlot.findUnique({
     where: { id: slotId },
@@ -85,18 +101,23 @@ export async function handleAssetsUpload(formData: FormData) {
   });
 
   if (!slot) {
-    console.error("Slot introuvable");
+    console.error("[UPLOAD] ERREUR: Slot introuvable en BDD");
     return;
   }
 
   // 2. UPLOAD VERS CLOUDINARY [cite: 184, 185]
+  console.log("[UPLOAD] Démarrage de l'upload Cloudinary...");
   // On utilise le buffer qu'on a déjà créé
   const uploadResponse: any = await new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream({ folder: "slots_ads" }, (error, result) => {
-      if (error) reject(error);
+      if (error) {
+        console.error("[UPLOAD] ❌ Erreur Cloudinary:", error);
+        reject(error);
+      }
       resolve(result);
     }).end(buffer);
   });
+  console.log("[UPLOAD] ✅ Upload Cloudinary réussi! URL:", uploadResponse.secure_url);
 
   // 3. MISE À JOUR DE LA BDD [cite: 186, 188]
   // On remplace le '0' par 'slot.price' pour que l'argent s'affiche sur le dashboard

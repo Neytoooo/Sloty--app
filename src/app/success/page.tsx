@@ -1,67 +1,86 @@
 import { handleAssetsUpload } from "./actions";
+import Background3D from "@/components/background-3d";
+import { CheckCircle2, Image as ImageIcon, Link as LinkIcon, Upload } from "lucide-react";
 
-// On définit l'interface pour les paramètres de l'URL (Next.js 15)
 interface SuccessPageProps {
   searchParams: Promise<{ slotId: string; error?: string }>;
 }
 
 export default async function SuccessPage({ searchParams }: SuccessPageProps) {
-  // CORRECTIF : On doit "unwrapper" searchParams avant de l'utiliser
   const { slotId, error } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-200">
-      <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-10 rounded-[2.5rem] shadow-2xl">
-        <h1 className="text-2xl font-black text-white mb-6 text-center">
-          Paiement réussi ! 🚀
+    <div className="min-h-screen bg-slate-50 relative flex items-center justify-center p-6 text-slate-800">
+      <Background3D starsOnly />
+      
+      <div className="max-w-md w-full bg-white/80 backdrop-blur-xl border border-slate-200 p-8 rounded-[2rem] shadow-2xl relative z-10">
+        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <CheckCircle2 size={32} />
+        </div>
+        
+        <h1 className="text-2xl font-black text-slate-900 mb-2 text-center tracking-tight">
+          Paiement réussi !
         </h1>
 
-        {error === 'moderation_failed' && (
-          <div className="mb-6 p-4 bg-red-900/50 border border-red-500 rounded-xl text-red-200 text-sm font-semibold">
-            ⚠️ Votre image a été refusée par la modération (contenu inapproprié). Veuillez en choisir une autre.
-          </div>
-        )}
-        <p className="text-slate-400 text-sm text-center mb-8">
-          Complétez les informations ci-dessous pour activer votre publicité sur le site.
+        <p className="text-slate-500 text-sm text-center mb-8 font-medium">
+          Dernière étape : complétez les informations ci-dessous pour activer votre publicité.
         </p>
 
+        {error === 'missing_fields' && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-600 text-sm font-semibold flex items-start gap-3">
+            <span className="text-xl">⚠️</span>
+            <p>Veuillez sélectionner une image et remplir tous les champs.</p>
+          </div>
+        )}
+        
+        {error === 'moderation_failed' && (
+          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm font-semibold flex items-start gap-3">
+            <span className="text-rose-500 mt-0.5">⚠️</span>
+            Votre image a été refusée par la modération (contenu inapproprié). Veuillez en choisir une autre.
+          </div>
+        )}
+
         <form action={handleAssetsUpload} className="space-y-6">
-          {/* On passe l'ID du slot pour que l'action sache quoi mettre à jour */}
           <input type="hidden" name="slotId" value={slotId} />
 
-          <div className="space-y-4 text-left">
+          <div className="space-y-5 text-left">
             <div>
-              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Lien de redirection (Destination)
+              <label className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 tracking-wider ml-1 mb-2">
+                <LinkIcon size={14} />
+                Lien de redirection
               </label>
               <input
                 name="link"
                 type="url"
                 required
-                className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 text-white rounded-2xl outline-none focus:border-blue-500 transition-all"
+                className="w-full p-3.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium placeholder:text-slate-400"
                 placeholder="https://votre-site.com"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-1">
-                Image publicitaire (600x200px conseillé)
+              <label className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 tracking-wider ml-1 mb-2">
+                <ImageIcon size={14} />
+                Visuel (600x200px conseillé)
               </label>
-              <input
-                name="image"
-                type="file"
-                accept="image/*"
-                required
-                className="w-full mt-2 p-4 bg-slate-800 border border-slate-700 text-slate-400 rounded-2xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 transition-all cursor-pointer"
-              />
+              <div className="relative">
+                <input
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  required
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-xl outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white file:text-slate-700 file:shadow-sm hover:file:bg-slate-50 cursor-pointer"
+                />
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]"
           >
-            Publier maintenant
+            <Upload size={18} />
+            Publier la campagne
           </button>
         </form>
       </div>

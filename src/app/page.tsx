@@ -69,9 +69,13 @@ export default function LandingPage() {
             </StarryButton>
           </SignedIn>
 
-          <button className={styles.secondaryButton}>
-            <Link href="/explore">Voir le catalogue</Link>
-          </button>
+          <Link 
+            href="/explore" 
+            className={`group relative overflow-hidden inline-flex items-center justify-center ${styles.secondaryButton} hover:ring-2 hover:ring-blue-600 hover:ring-offset-2 hover:ring-offset-[#f8fafc]`}
+          >
+            <span className="absolute right-0 -mt-12 h-32 w-12 translate-x-16 rotate-12 bg-black opacity-[0.08] transition-all duration-1000 ease-out group-hover:-translate-x-64" />
+            <span className="relative z-10">Voir le catalogue</span>
+          </Link>
         </div>
       </header>
 

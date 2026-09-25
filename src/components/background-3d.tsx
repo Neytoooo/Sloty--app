@@ -63,7 +63,7 @@ function InteractiveParticles({ count = 4000 }) {
   );
 }
 
-function Scene() {
+function Scene({ starsOnly }: { starsOnly?: boolean }) {
   const { scrollYProgress } = useScroll();
   
   const cloudRef = useRef<THREE.Group>(null!);
@@ -72,6 +72,8 @@ function Scene() {
   const analyticsRef = useRef<THREE.Group>(null!);
 
   useFrame(() => {
+    if (starsOnly) return;
+    
     const scroll = scrollYProgress.get(); // Number between 0 and 1
 
     if (analyticsRef.current) {
@@ -122,125 +124,129 @@ function Scene() {
       {/* Etoiles interactives */}
       <InteractiveParticles count={4000} />
 
-      {/* Cloud (Data / Hosting) */}
-      <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-        <group ref={cloudRef} position={[-6, 4, -4]} rotation-x={0.5}>
-          <mesh position={[0, -0.8, -0.8]} scale={0.8}>
-            <extrudeGeometry 
-              args={[
-                (() => {
-                  const s = new THREE.Shape();
-                  s.moveTo(-1.5, 0);
-                  s.lineTo(1.5, 0); // Base
-                  s.bezierCurveTo(2.5, 0, 2.5, 1.5, 1.5, 1.5); // Right bump
-                  s.bezierCurveTo(1.5, 3.2, -0.5, 3.2, -0.5, 1.8); // Top bump
-                  s.bezierCurveTo(-2, 2.5, -2.5, 1.5, -1.5, 0); // Left bump
-                  return s;
-                })(),
-                {
-                  depth: 1.6,
-                  bevelEnabled: true,
-                  bevelSegments: 32,
-                  steps: 1,
-                  bevelSize: 0.5,
-                  bevelThickness: 0.8,
-                  curveSegments: 64
-                }
-              ]} 
-            />
-            <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#3b82f6" attenuationDistance={3} />
-          </mesh>
-        </group>
-      </Float>
+      {!starsOnly && (
+        <>
+          {/* Cloud (Data / Hosting) */}
+          <Float speed={2} rotationIntensity={1} floatIntensity={1}>
+            <group ref={cloudRef} position={[-6, 4, -4]} rotation-x={0.5}>
+              <mesh position={[0, -0.8, -0.8]} scale={0.8}>
+                <extrudeGeometry 
+                  args={[
+                    (() => {
+                      const s = new THREE.Shape();
+                      s.moveTo(-1.5, 0);
+                      s.lineTo(1.5, 0); // Base
+                      s.bezierCurveTo(2.5, 0, 2.5, 1.5, 1.5, 1.5); // Right bump
+                      s.bezierCurveTo(1.5, 3.2, -0.5, 3.2, -0.5, 1.8); // Top bump
+                      s.bezierCurveTo(-2, 2.5, -2.5, 1.5, -1.5, 0); // Left bump
+                      return s;
+                    })(),
+                    {
+                      depth: 1.6,
+                      bevelEnabled: true,
+                      bevelSegments: 32,
+                      steps: 1,
+                      bevelSize: 0.5,
+                      bevelThickness: 0.8,
+                      curveSegments: 64
+                    }
+                  ]} 
+                />
+                <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#3b82f6" attenuationDistance={3} />
+              </mesh>
+            </group>
+          </Float>
 
-      {/* Ad Slot (Rounded Box / Billboard) */}
-      <Float speed={1.5} rotationIntensity={1.5} floatIntensity={1.5}>
-        <group ref={adSlotRef} position={[7, -2, -6]} rotation-y={0.3}>
-          <RoundedBox args={[4, 2.5, 0.4]} radius={0.3} smoothness={4}>
-            <MeshTransmissionMaterial 
-              {...materialProps}
-              color="#e2e8f0"
-              attenuationColor="#3b82f6" // Soft blue
-              attenuationDistance={3}
-            />
-          </RoundedBox>
-        </group>
-      </Float>
+          {/* Ad Slot (Rounded Box / Billboard) */}
+          <Float speed={1.5} rotationIntensity={1.5} floatIntensity={1.5}>
+            <group ref={adSlotRef} position={[7, -2, -6]} rotation-y={0.3}>
+              <RoundedBox args={[4, 2.5, 0.4]} radius={0.3} smoothness={4}>
+                <MeshTransmissionMaterial 
+                  {...materialProps}
+                  color="#e2e8f0"
+                  attenuationColor="#3b82f6" // Soft blue
+                  attenuationDistance={3}
+                />
+              </RoundedBox>
+            </group>
+          </Float>
 
-      {/* Audience / Network (Torus / Ring) */}
-      <Float speed={2.5} rotationIntensity={0.8} floatIntensity={2}>
-        <group ref={audienceRef} position={[-7, -5, -8]}>
-          <mesh>
-            <torusGeometry args={[1.8, 0.6, 32, 100]} />
-            <MeshTransmissionMaterial 
-              {...materialProps}
-              color="#e2e8f0"
-              attenuationColor="#a855f7" // Soft purple
-              attenuationDistance={3}
-            />
-          </mesh>
-        </group>
-      </Float>
+          {/* Audience / Network (Torus / Ring) */}
+          <Float speed={2.5} rotationIntensity={0.8} floatIntensity={2}>
+            <group ref={audienceRef} position={[-7, -5, -8]}>
+              <mesh>
+                <torusGeometry args={[1.8, 0.6, 32, 100]} />
+                <MeshTransmissionMaterial 
+                  {...materialProps}
+                  color="#e2e8f0"
+                  attenuationColor="#a855f7" // Soft purple
+                  attenuationDistance={3}
+                />
+              </mesh>
+            </group>
+          </Float>
 
-      {/* Analytics (Chart + Arrow) */}
-      <Float speed={2} rotationIntensity={1.2} floatIntensity={1.5}>
-        <group ref={analyticsRef} position={[6, 3, -7]} rotation-y={-0.5}>
-          {/* Bar 1 */}
-          <mesh position={[-1.2, -1, 0]}>
-            <boxGeometry args={[0.6, 1.5, 0.6]} />
-            <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-          </mesh>
-          {/* Bar 2 */}
-          <mesh position={[0, -0.25, 0]}>
-            <boxGeometry args={[0.6, 3, 0.6]} />
-            <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-          </mesh>
-          {/* Bar 3 */}
-          <mesh position={[1.2, 0.5, 0]}>
-            <boxGeometry args={[0.6, 4.5, 0.6]} />
-            <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-          </mesh>
-          
-          {/* Trend Arrow (Stepped / Escalier) */}
-          <group position={[0, 0, 0]}>
-            {/* H1 */}
-            <mesh position={[-1.05, 0.25, 0]}>
-              <boxGeometry args={[0.9, 0.25, 0.25]} />
-              <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-            </mesh>
-            {/* V1 */}
-            <mesh position={[-0.6, 1.0, 0]}>
-              <boxGeometry args={[0.25, 1.75, 0.25]} />
-              <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-            </mesh>
-            {/* H2 */}
-            <mesh position={[0, 1.75, 0]}>
-              <boxGeometry args={[1.45, 0.25, 0.25]} />
-              <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-            </mesh>
-            {/* V2 */}
-            <mesh position={[0.6, 2.5, 0]}>
-              <boxGeometry args={[0.25, 1.75, 0.25]} />
-              <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-            </mesh>
-            {/* H3 */}
-            <mesh position={[1.1, 3.25, 0]}>
-              <boxGeometry args={[1.25, 0.25, 0.25]} />
-              <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-            </mesh>
-            {/* Arrow Head */}
-            <mesh position={[2.0, 3.25, 0]} rotation={[0, 0, -Math.PI / 2]}>
-              <coneGeometry args={[0.4, 0.8, 32]} />
-              <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
-            </mesh>
-          </group>
-        </group>
-      </Float>
+          {/* Analytics (Chart + Arrow) */}
+          <Float speed={2} rotationIntensity={1.2} floatIntensity={1.5}>
+            <group ref={analyticsRef} position={[6, 3, -7]} rotation-y={-0.5}>
+              {/* Bar 1 */}
+              <mesh position={[-1.2, -1, 0]}>
+                <boxGeometry args={[0.6, 1.5, 0.6]} />
+                <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+              </mesh>
+              {/* Bar 2 */}
+              <mesh position={[0, -0.25, 0]}>
+                <boxGeometry args={[0.6, 3, 0.6]} />
+                <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+              </mesh>
+              {/* Bar 3 */}
+              <mesh position={[1.2, 0.5, 0]}>
+                <boxGeometry args={[0.6, 4.5, 0.6]} />
+                <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+              </mesh>
+              
+              {/* Trend Arrow (Stepped / Escalier) */}
+              <group position={[0, 0, 0]}>
+                {/* H1 */}
+                <mesh position={[-1.05, 0.25, 0]}>
+                  <boxGeometry args={[0.9, 0.25, 0.25]} />
+                  <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+                </mesh>
+                {/* V1 */}
+                <mesh position={[-0.6, 1.0, 0]}>
+                  <boxGeometry args={[0.25, 1.75, 0.25]} />
+                  <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+                </mesh>
+                {/* H2 */}
+                <mesh position={[0, 1.75, 0]}>
+                  <boxGeometry args={[1.45, 0.25, 0.25]} />
+                  <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+                </mesh>
+                {/* V2 */}
+                <mesh position={[0.6, 2.5, 0]}>
+                  <boxGeometry args={[0.25, 1.75, 0.25]} />
+                  <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+                </mesh>
+                {/* H3 */}
+                <mesh position={[1.1, 3.25, 0]}>
+                  <boxGeometry args={[1.25, 0.25, 0.25]} />
+                  <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+                </mesh>
+                {/* Arrow Head */}
+                <mesh position={[2.0, 3.25, 0]} rotation={[0, 0, -Math.PI / 2]}>
+                  <coneGeometry args={[0.4, 0.8, 32]} />
+                  <MeshTransmissionMaterial {...materialProps} color="#e2e8f0" attenuationColor="#f43f5e" attenuationDistance={3} />
+                </mesh>
+              </group>
+            </group>
+          </Float>
+        </>
+      )}
     </>
   );
 }
 
-export default function Background3D() {
+export default function Background3D({ starsOnly = false }: { starsOnly?: boolean }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -253,7 +259,7 @@ export default function Background3D() {
         eventSource={document.body}
       >
         <color attach="background" args={['#f8fafc']} />
-        <Scene />
+        <Scene starsOnly={starsOnly} />
       </Canvas>
     </div>
   );
